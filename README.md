@@ -1,2 +1,2 @@
 # frontend
-Reposit[orio destinado ao Front-end
+Repositório destinado ao Front-end
