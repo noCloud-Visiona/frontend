@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'register_page.dart';
-import 'custom_app_bar.dart';
+import '../widgets/custom_app_bar.dart';
 
 class LoginPage extends StatelessWidget {
+  const LoginPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,29 +22,29 @@ class LoginPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
+            const TextField(
               decoration: InputDecoration(labelText: 'E-mail'),
             ),
-            TextField(
+            const TextField(
               obscureText: true,
               decoration: InputDecoration(labelText: 'Senha'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 // Ação para o botão de login
               },
-              child: Text('Login'),
+              child: const Text('Login'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             TextButton(
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => RegisterPage()),
+                  MaterialPageRoute(builder: (context) => const RegisterPage()),
                 );
               },
-              child: Text('Não tem uma conta? Criar aqui'),
+              child: const Text('Não tem uma conta? Criar aqui'),
             ),
           ],
         ),

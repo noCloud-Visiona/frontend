@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'custom_app_bar.dart';
+import '../widgets/custom_app_bar.dart';
 
 class RegisterPage extends StatelessWidget {
+  const RegisterPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,19 +21,19 @@ class RegisterPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
+            const TextField(
               decoration: InputDecoration(labelText: 'E-mail'),
             ),
-            TextField(
+            const TextField(
               obscureText: true,
               decoration: InputDecoration(labelText: 'Senha'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 // Ação para o botão de registro
               },
-              child: Text('Criar Conta'),
+              child: const Text('Criar Conta'),
             ),
           ],
         ),

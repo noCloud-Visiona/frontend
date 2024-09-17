@@ -5,7 +5,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onBackPressed;
   final VoidCallback? onUserIconPressed;
 
-  CustomAppBar({
+  const CustomAppBar({super.key, 
     required this.title,
     this.onBackPressed,
     this.onUserIconPressed,
@@ -14,20 +14,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Color(0xFF176B87),
+      backgroundColor: const Color(0xFF176B87),
       leading: IconButton(
-        icon: Icon(Icons.arrow_back, color: Colors.white),
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: onBackPressed,
       ),
       title: Center(
         child: Text(
           title,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
         ),
       ),
       actions: [
         IconButton(
-          icon: Icon(Icons.account_circle, color: Colors.white), // Novo ícone de usuário
+          icon: const Icon(Icons.account_circle, color: Colors.white), // Novo ícone de usuário
           onPressed: onUserIconPressed,
         ),
       ],
@@ -37,5 +37,5 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

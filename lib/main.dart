@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart';
-import 'register_page.dart';
+import 'pages/login_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -13,7 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'noCloud',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        textTheme: TextTheme(
+        textTheme: const TextTheme(
           titleLarge: TextStyle(color: Colors.white), // Atualizado para 'titleLarge'
         ),
       ),
