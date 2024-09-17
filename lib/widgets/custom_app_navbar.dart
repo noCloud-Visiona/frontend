@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
+class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onBackPressed;
   final VoidCallback? onUserIconPressed;
 
-  const CustomAppBar({super.key, 
-    required this.title,
+  const CustomNavBar({
+    super.key, 
     this.onBackPressed,
     this.onUserIconPressed,
   });
@@ -19,10 +18,10 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: onBackPressed,
       ),
-      title: Center(
+      title: const Center(
         child: Text(
-          title,
-          style: const TextStyle(color: Colors.white),
+          'noCloud',
+          style: TextStyle(color: Colors.white),
         ),
       ),
       actions: [

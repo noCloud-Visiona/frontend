@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/home_page.dart';
 import 'register_page.dart';
-import '../widgets/custom_app_bar.dart';
+import '../widgets/custom_app_navbar.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -8,8 +9,7 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(
-        title: 'noCloud',
+      appBar: CustomNavBar(
         onBackPressed: () {
           // Ação para o botão de voltar
         },
@@ -33,6 +33,9 @@ class LoginPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () {
                 // Ação para o botão de login
+                Navigator.push(context, 
+                MaterialPageRoute(builder: (context) => const HomePage()),
+                );
               },
               child: const Text('Login'),
             ),
