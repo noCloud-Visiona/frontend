@@ -1,0 +1,20 @@
+# Use uma imagem base oficial do Flutter
+FROM ghcr.io/cirruslabs/flutter:3.24.3
+
+# Defina o diretório de trabalho no contêiner
+WORKDIR /android/app
+
+# Copie os arquivos do projeto Flutter para o contêiner
+COPY . /android/app
+
+# Permitir execução do Flutter como root
+ENV FLUTTER_ALLOW_ROOT=true
+
+# Execute o comando para obter as dependências do projeto
+RUN flutter pub get
+
+# Exponha a porta onde o Flutter serve a aplicação (ajuste conforme necessário)
+EXPOSE 8080
+
+# Comando para rodar a aplicação Flutter em modo de desenvolvimento
+CMD ["flutter", "run", "-d", "web-server", "--web-port", "8080", "--web-hostname", "0.0.0.0"]
