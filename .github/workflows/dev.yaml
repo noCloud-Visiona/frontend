@@ -24,13 +24,13 @@ jobs:
 
       - name: Build and tag Docker image for Development
         run: |
-          docker build -t jonasrsribeiro/nc-controller-conversor -f Dockerfile.dev .
-          docker tag jonasrsribeiro/nc-controller-conversor:latest jonasrsribeiro/nc-controller-conversor:develop
+          docker build -t jonasrsribeiro/nc-controller-frontend -f Dockerfile.dev .
+          docker tag jonasrsribeiro/nc-controller-frontend:latest jonasrsribeiro/nc-controller-frontend:develop
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u jonasrsribeiro --password-stdin
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push jonasrsribeiro/nc-controller-conversor:latest
-          docker push jonasrsribeiro/nc-controller-conversor:develop
+          docker push jonasrsribeiro/nc-controller-frontend:latest
+          docker push jonasrsribeiro/nc-controller-frontend:develop
