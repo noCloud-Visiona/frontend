@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'pages/login_page.dart';
 
-void main() {
-  runApp(MyApp());
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -13,10 +18,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         textTheme: const TextTheme(
-          titleLarge: TextStyle(color: Colors.white), // Atualizado para 'titleLarge'
+          titleLarge: TextStyle(color: Colors.white),
         ),
       ),
-      home: LoginPage(),
+      home: const LoginPage(),
     );
   }
 }
