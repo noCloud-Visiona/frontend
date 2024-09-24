@@ -154,6 +154,36 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            // Lógica de download será adicionada aqui
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color(0xFF176B87), // Cor da navbar
+                            foregroundColor: Colors.white,
+                            shadowColor: Colors.black,
+                            elevation: 5,
+                            side:
+                                const BorderSide(color: Colors.white, width: 1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  10), // Cantos arredondados em 5%
+                            ),
+                            minimumSize: const Size(48, 48), // Tamanho quadrado
+                          ),
+                          child:
+                              const Icon(Icons.download, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
