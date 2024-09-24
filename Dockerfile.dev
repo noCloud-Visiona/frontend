@@ -1,5 +1,10 @@
-# Use uma imagem base oficial do Flutter
+# Use uma imagem base oficial do Flutter com Android SDK
 FROM ghcr.io/cirruslabs/flutter:3.24.3
+
+# Instale o SDK do Android (já vem pré-instalado em algumas versões do CirrusLabs)
+# Caso necessário, você pode instalar manualmente os pacotes relevantes do SDK
+# RUN yes | sdkmanager --licenses && \
+#     sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
 
 # Defina o diretório de trabalho no contêiner
 WORKDIR /android/app
@@ -10,6 +15,10 @@ COPY . /android/app
 # Permitir execução do Flutter como root
 ENV FLUTTER_ALLOW_ROOT=true
 
+# Variáveis de ambiente para configurar o Android SDK
+ENV ANDROID_HOME=/opt/android-sdk
+ENV PATH=$ANDROID_HOME/platform-tools:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH
+
 # Execute o comando para obter as dependências do projeto
 RUN flutter pub get
 
@@ -17,4 +26,4 @@ RUN flutter pub get
 EXPOSE 80
 
 # Comando para rodar a aplicação Flutter em modo de desenvolvimento
-CMD ["flutter", "run", "-d", "web-server", "--web-port", "80", "--web-hostname", "0.0.0.0"]
+CMD ["flutter", "run", "-d", "android-emulator", "--no-sound-null-safety"]
