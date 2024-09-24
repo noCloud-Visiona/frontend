@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/detalhe_imagem_page.dart';
 import 'package:frontend/pages/template/app_template.dart';
 
 class AnalisarImgPage extends StatelessWidget {
@@ -9,7 +10,8 @@ class AnalisarImgPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Exibindo imagem em AnalisarImgPage com imgPath: $imgPath'); // Log para depuração
+    print(
+        'Exibindo imagem em AnalisarImgPage com imgPath: $imgPath'); // Log para depuração
 
     return AppTemplate(
       body: Center(
@@ -33,7 +35,10 @@ class AnalisarImgPage extends StatelessWidget {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Ação para analisar a imagem
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DetalheImgPage()),
+                );
               },
               child: const Text('Analisar'),
             ),
