@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:frontend/pages/template/app_template.dart';
 
 class DetalheImgPage extends StatefulWidget {
   @override
@@ -30,10 +31,8 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detalhes da Imagem'),
-      ),
+    return AppTemplate(
+      currentIndex: 1,
       body: imageData == null
           ? const Center(child: CircularProgressIndicator())
           : Center(
@@ -54,35 +53,35 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                     rows: [
                       DataRow(cells: [
                         const DataCell(Text('ID')),
-                        DataCell(Text(imageData!['id'])),
+                        DataCell(Text(imageData!['id'] ?? '')),
                       ]),
                       DataRow(cells: [
                         const DataCell(Text('Data')),
-                        DataCell(Text(imageData!['data'])),
+                        DataCell(Text(imageData!['data'] ?? '')),
                       ]),
                       DataRow(cells: [
                         const DataCell(Text('Hora')),
-                        DataCell(Text(imageData!['hora'])),
+                        DataCell(Text(imageData!['hora'] ?? '')),
                       ]),
                       DataRow(cells: [
                         const DataCell(Text('Resolução da Imagem')),
-                        DataCell(Text(imageData!['resolucao_imagem'])),
+                        DataCell(Text(imageData!['resolucao_imagem'] ?? '')),
                       ]),
                       DataRow(cells: [
                         const DataCell(Text('Satélite')),
-                        DataCell(Text(imageData!['satelite'])),
+                        DataCell(Text(imageData!['satelite'] ?? '')),
                       ]),
                       DataRow(cells: [
                         const DataCell(Text('Sensor')),
-                        DataCell(Text(imageData!['sensor'])),
+                        DataCell(Text(imageData!['sensor'] ?? '')),
                       ]),
                       DataRow(cells: [
                         const DataCell(Text('Percentual de Nuvem')),
-                        DataCell(Text('${imageData!['percentual_nuvem']?? ''}%')),
+                        DataCell(Text('${imageData!['percentual_nuvem'] ?? ''}%')),
                       ]),
                       DataRow(cells: [
                         const DataCell(Text('Área Visível no Mapa')),
-                        DataCell(Text('${imageData!['area_visivel_mapa']?? ''}%')),
+                        DataCell(Text('${imageData!['area_visivel_mapa'] ?? ''}%')),
                       ]),
                     ],
                   ),
