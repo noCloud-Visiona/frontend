@@ -35,56 +35,125 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
       currentIndex: 1,
       body: imageData == null
           ? const Center(child: CircularProgressIndicator())
-          : Center(
+          : SingleChildScrollView(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  const SizedBox(height: 10),
                   Image.network(
                     imageData!['img_tratada'] ?? '',
                     width: 300,
                     height: 300,
                     fit: BoxFit.cover,
                   ),
-                  DataTable(
-                    columns: const [
-                      DataColumn(label: Text('Campo')),
-                      DataColumn(label: Text('Valor')),
-                    ],
-                    rows: [
-                      DataRow(cells: [
-                        const DataCell(Text('ID')),
-                        DataCell(Text(imageData!['id'] ?? '')),
-                      ]),
-                      DataRow(cells: [
-                        const DataCell(Text('Data')),
-                        DataCell(Text(imageData!['data'] ?? '')),
-                      ]),
-                      DataRow(cells: [
-                        const DataCell(Text('Hora')),
-                        DataCell(Text(imageData!['hora'] ?? '')),
-                      ]),
-                      DataRow(cells: [
-                        const DataCell(Text('Resolução da Imagem')),
-                        DataCell(Text(imageData!['resolucao_imagem'] ?? '')),
-                      ]),
-                      DataRow(cells: [
-                        const DataCell(Text('Satélite')),
-                        DataCell(Text(imageData!['satelite'] ?? '')),
-                      ]),
-                      DataRow(cells: [
-                        const DataCell(Text('Sensor')),
-                        DataCell(Text(imageData!['sensor'] ?? '')),
-                      ]),
-                      DataRow(cells: [
-                        const DataCell(Text('Percentual de Nuvem')),
-                        DataCell(Text('${imageData!['percentual_nuvem'] ?? ''}%')),
-                      ]),
-                      DataRow(cells: [
-                        const DataCell(Text('Área Visível no Mapa')),
-                        DataCell(Text('${imageData!['area_visivel_mapa'] ?? ''}%')),
-                      ]),
-                    ],
+                  const SizedBox(height: 20),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Table(
+                      columnWidths: const {
+                        0: FlexColumnWidth(1),
+                        1: FlexColumnWidth(2),
+                      },
+                      border: TableBorder.all(color: Colors.black),
+                      children: [
+                        const TableRow(children: [
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Campo',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Valor',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ]),
+                        TableRow(children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('ID'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(imageData!['id'] ?? ''),
+                          ),
+                        ]),
+                        TableRow(children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Data'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(imageData!['data'] ?? ''),
+                          ),
+                        ]),
+                        TableRow(children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Hora'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(imageData!['hora'] ?? ''),
+                          ),
+                        ]),
+                        TableRow(children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Resolução da Imagem'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(imageData!['resolucao_imagem'] ?? ''),
+                          ),
+                        ]),
+                        TableRow(children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Satélite'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(imageData!['satelite'] ?? ''),
+                          ),
+                        ]),
+                        TableRow(children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Sensor'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(imageData!['sensor'] ?? ''),
+                          ),
+                        ]),
+                        TableRow(children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Percentual de Nuvem'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                                '${imageData!['percentual_nuvem'] ?? ''}%'),
+                          ),
+                        ]),
+                        TableRow(children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text('Área Visível no Mapa'),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                                '${imageData!['area_visivel_mapa'] ?? ''}%'),
+                          ),
+                        ]),
+                      ],
+                    ),
                   ),
+                  const SizedBox(height: 10),
                 ],
               ),
             ),
