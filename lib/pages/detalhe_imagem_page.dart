@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/widgets/custom_img_detail_table.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/pages/template/app_template.dart';
+import 'package:frontend/widgets/custom_dialog.dart'; // Importe o CustomDialog
 
 class DetalheImgPage extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class DetalheImgPage extends StatefulWidget {
 
 class _DetalheImgPageState extends State<DetalheImgPage> {
   Map<String, dynamic>? imageData;
+  bool _isSelected = false;
 
   @override
   void initState() {
@@ -28,6 +30,79 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
     } else {
       throw Exception('Falha ao carregar dados');
     }
+  }
+
+  void _showDownloadDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return CustomDialog(
+              title: 'Selecione a imagem para download',
+              content: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: _isSelected,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _isSelected = value ?? false;
+                      });
+                    },
+                  ),
+                  const SizedBox(width: 10),
+                  Image.network(
+                    imageData!['thumbnail'] ?? '',
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.picture_as_pdf),
+                  label: const Text('PDF'),
+                  onPressed: () {
+                    // Lógica para download em PDF
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF176B87),
+                    foregroundColor: Colors.white,
+                    shadowColor: Colors.black,
+                    elevation: 5,
+                    side: const BorderSide(color: Colors.white, width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    minimumSize: const Size(48, 48),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.download),
+                  label: const Text('Download'),
+                  onPressed: () {
+                    // Lógica para download
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF176B87),
+                    foregroundColor: Colors.white,
+                    shadowColor: Colors.black,
+                    elevation: 5,
+                    side: const BorderSide(color: Colors.white, width: 1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    minimumSize: const Size(48, 48),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -67,9 +142,7 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         ElevatedButton(
-                          onPressed: () {
-                            // Lógica de download será adicionada aqui
-                          },
+                          onPressed: _showDownloadDialog,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF176B87),
                             foregroundColor: Colors.white,
