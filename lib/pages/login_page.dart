@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Importando SharedPreferences
 import 'package:frontend/pages/home_page.dart';
 import 'register_page.dart';
 import '../widgets/custom_app_navbar.dart';
 import '../widgets/custom_dialog.dart';
+import 'package:frontend/utils/jwt_utils.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,13 +22,11 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _login() async {
-    // Verificando se os campos estão preenchidos
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       showCustomDialog(context, "Por favor, preencha todos os campos.", null);
       return;
     }
 
-    // Validando o e-mail com regex
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     if (!emailRegex.hasMatch(_emailController.text)) {
       showCustomDialog(context, "E-mail inválido.", null);
@@ -53,9 +53,11 @@ class _LoginPageState extends State<LoginPage> {
         final responseBody = jsonDecode(response.body);
         String token = responseBody['token']['token'];
 
-        // Armazenando o token no SharedPreferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('jwt_token', token);
+        // Armazenando o token no AuthProvider
+        Provider.of<AuthProvider>(context, listen: false).setJwtToken(token);
+
+        // Usando seu utilitário para decodificar e imprimir informações do token
+        printTokenInfo(token);
 
         showCustomDialog(context, "Login realizado com sucesso!", () {
           Navigator.pushReplacement(

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/user_profile_page.dart';
 
 class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onBackPressed;
   final VoidCallback? onUserIconPressed;
 
   const CustomNavBar({
-    super.key, 
+    super.key,
     this.onBackPressed,
     this.onUserIconPressed,
   });
@@ -26,8 +27,14 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.account_circle, color: Colors.white), // Novo ícone de usuário
-          onPressed: onUserIconPressed,
+          icon: const Icon(Icons.account_circle,
+              color: Colors.white), // Novo ícone de usuário
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const UserProfilePage()),
+            );
+          },
         ),
       ],
       // Ajuste o espaçamento do título centralizado
