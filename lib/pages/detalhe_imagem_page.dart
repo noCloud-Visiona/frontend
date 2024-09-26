@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:frontend/widgets/custom_img_detail_table.dart';
 import 'package:http/http.dart' as http;
 import 'package:frontend/pages/template/app_template.dart';
 
@@ -41,117 +42,23 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                 children: [
                   const SizedBox(height: 10),
                   Image.network(
-                    imageData!['img_tratada'] ?? '',
+                    imageData!['thumbnail'] ?? '',
                     width: 300,
                     height: 300,
                     fit: BoxFit.cover,
                   ),
                   const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Table(
-                      columnWidths: const {
-                        0: FlexColumnWidth(1),
-                        1: FlexColumnWidth(2),
-                      },
-                      border: TableBorder.all(color: Colors.black),
-                      children: [
-                        const TableRow(children: [
-                          Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Campo',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Valor',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
-                          ),
-                        ]),
-                        TableRow(children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('ID'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(imageData!['id'] ?? ''),
-                          ),
-                        ]),
-                        TableRow(children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Data'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(imageData!['data'] ?? ''),
-                          ),
-                        ]),
-                        TableRow(children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Hora'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(imageData!['hora'] ?? ''),
-                          ),
-                        ]),
-                        TableRow(children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Resolução da Imagem'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(imageData!['resolucao_imagem'] ?? ''),
-                          ),
-                        ]),
-                        TableRow(children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Satélite'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(imageData!['satelite'] ?? ''),
-                          ),
-                        ]),
-                        TableRow(children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Sensor'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(imageData!['sensor'] ?? ''),
-                          ),
-                        ]),
-                        TableRow(children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Percentual de Nuvem'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                                '${imageData!['percentual_nuvem'] ?? ''}%'),
-                          ),
-                        ]),
-                        TableRow(children: [
-                          const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text('Área Visível no Mapa'),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                                '${imageData!['area_visivel_mapa'] ?? ''}%'),
-                          ),
-                        ]),
-                      ],
-                    ),
+                  CustomTable(
+                    data: [
+                      {'campo': 'ID', 'valor': imageData!['id'] ?? ''},
+                      {'campo': 'Data', 'valor': imageData!['data'] ?? ''},
+                      {'campo': 'Hora', 'valor': imageData!['hora'] ?? ''},
+                      {'campo': 'Resolução da Imagem', 'valor': imageData!['resolucao_imagem'] ?? ''},
+                      {'campo': 'Satélite', 'valor': imageData!['satelite'] ?? ''},
+                      {'campo': 'Sensor', 'valor': imageData!['sensor'] ?? ''},
+                      {'campo': 'Percentual de Nuvem', 'valor': '${imageData!['percentual_nuvem'] ?? ''}%'},
+                      {'campo': 'Área Visível no Mapa', 'valor': '${imageData!['area_visivel_mapa'] ?? ''}%'},
+                    ],
                   ),
                   const SizedBox(height: 10),
                   Padding(
@@ -164,21 +71,17 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                             // Lógica de download será adicionada aqui
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color(0xFF176B87), // Cor da navbar
+                            backgroundColor: const Color(0xFF176B87),
                             foregroundColor: Colors.white,
                             shadowColor: Colors.black,
                             elevation: 5,
-                            side:
-                                const BorderSide(color: Colors.white, width: 1),
+                            side: const BorderSide(color: Colors.white, width: 1),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  10), // Cantos arredondados em 5%
+                              borderRadius: BorderRadius.circular(10), 
                             ),
-                            minimumSize: const Size(48, 48), // Tamanho quadrado
+                            minimumSize: const Size(48 , 48),
                           ),
-                          child:
-                              const Icon(Icons.download, color: Colors.white),
+                          child: const Icon(Icons.download, color: Colors.white),
                         ),
                       ],
                     ),
