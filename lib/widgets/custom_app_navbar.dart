@@ -28,7 +28,7 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         IconButton(
           icon: const Icon(Icons.account_circle,
-              color: Colors.white), // Novo ícone de usuário
+              color: Colors.white),
           onPressed: () {
             Navigator.push(
               context,

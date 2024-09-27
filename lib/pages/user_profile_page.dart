@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/list_user_page.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
@@ -17,11 +18,10 @@ class UserProfilePage extends StatefulWidget {
 class _UserProfilePageState extends State<UserProfilePage> {
   TextEditingController _nameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
-  TextEditingController _confirmPasswordController = TextEditingController(); 
+  TextEditingController _confirmPasswordController = TextEditingController();
   bool _isLoading = true;
   Map<String, dynamic>? userData;
-  List<dynamic>? users; 
-  bool _isAdmin = false; 
+  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -109,34 +109,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     Navigator.of(context).pushReplacementNamed('/login');
   }
 
-  Future<void> _fetchUsers() async {
-    try {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final String? token = authProvider.jwtToken;
-      if (token != null && isTokenValid(token)) {
-        final String apiUrl = '${dotenv.env['API_URL']}/usuarios/listar';
-
-        final response = await http.get(
-          Uri.parse(apiUrl),
-          headers: {
-            'Authorization': 'Bearer $token',
-          },
-        );
-
-        if (response.statusCode == 200) {
-          setState(() {
-            users = jsonDecode(response.body);
-            print('Lista de usuários: $users');
-          });
-        } else {
-          showCustomDialog(context, "Erro ao listar usuários: ${response.body}", null);
-        }
-      }
-    } catch (e) {
-      print('Erro ao buscar usuários: $e');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -175,38 +147,27 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ElevatedButton(
               onPressed: _logout,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red, 
-                foregroundColor: Colors.white, 
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
               ),
               child: const Text('Logout'),
             ),
-            const SizedBox(height: 20),
-            if (_isAdmin) ...[
-              ElevatedButton(
-                onPressed: _fetchUsers,
-                child: const Text('Listar Usuários'),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: users?.length ?? 0,
-                  itemBuilder: (context, index) {
-                    final user = users![index];
-                    return ListTile(
-                      title: Text(user['nome']),
-                      subtitle: Text(user['email']),
-                      trailing: Text(user['is_adm'] ? 'Admin' : 'Usuário'),
-                      onTap: () {
-                        // Aqui você pode adicionar a lógica para visualizar ou editar os detalhes do usuário
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
           ],
         ),
       ),
+      floatingActionButton: _isAdmin
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ListUsersPage(),
+                  ),
+                );
+              },
+              child: const Icon(Icons.list),
+              tooltip: 'Listar Todos Usuários',
+            )
+          : null,
     );
   }
 }
