@@ -1,11 +1,15 @@
-import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/custom_img_detail_table.dart';
-import 'package:http/http.dart' as http;
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:frontend/widgets/custom_dialog.dart'; // Importe o CustomDialog
 
 class DetalheImgPage extends StatefulWidget {
+  final Map<String, dynamic> data;
+  final Uint8List? imageBytes;
+
+  const DetalheImgPage({super.key, required this.data, this.imageBytes});
+
   @override
   _DetalheImgPageState createState() => _DetalheImgPageState();
 }
@@ -17,19 +21,7 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
   @override
   void initState() {
     super.initState();
-    fetchImageData();
-  }
-
-  Future<void> fetchImageData() async {
-    final response =
-        await http.get(Uri.parse('http://demo0152687.mockable.io/imgDetail'));
-    if (response.statusCode == 200) {
-      setState(() {
-        imageData = jsonDecode(response.body);
-      });
-    } else {
-      throw Exception('Falha ao carregar dados');
-    }
+    imageData = widget.data;
   }
 
   void _showDownloadDialog() {
@@ -52,8 +44,8 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                     },
                   ),
                   const SizedBox(width: 10),
-                  Image.network(
-                    imageData!['thumbnail'] ?? '',
+                  Image.memory(
+                    widget.imageBytes!,
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,
@@ -116,8 +108,8 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
-                  Image.network(
-                    imageData!['thumbnail'] ?? '',
+                  Image.memory(
+                    widget.imageBytes!,
                     width: 300,
                     height: 300,
                     fit: BoxFit.cover,
