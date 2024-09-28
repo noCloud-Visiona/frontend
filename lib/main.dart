@@ -24,8 +24,13 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const LoginPage(),
-       routes: {
-        '/analisar': (context) => const AnalisarImgPage(imgPath: ''), // Ajuste conforme necessário
+      routes: {
+        '/analisar': (context) {
+          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          return AnalisarImgPage(
+            imgPath: args['imgPath'],
+          );
+        },
       },
     );
   }

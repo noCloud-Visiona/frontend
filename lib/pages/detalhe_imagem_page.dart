@@ -108,12 +108,13 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
-                  Image.memory(
-                    widget.imageBytes!,
-                    width: 300,
-                    height: 300,
-                    fit: BoxFit.cover,
-                  ),
+                  if (widget.imageBytes != null)
+                    Image.memory(
+                      widget.imageBytes!,
+                      width: 300,
+                      height: 300,
+                      fit: BoxFit.cover,
+                    ),
                   const SizedBox(height: 20),
                   CustomTable(
                     data: [

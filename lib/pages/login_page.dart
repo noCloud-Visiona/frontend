@@ -7,6 +7,7 @@ import 'package:frontend/pages/home_page.dart';
 import 'register_page.dart';
 import '../widgets/custom_app_navbar.dart';
 import '../widgets/custom_dialog.dart';
+import 'package:jwt_decoder/jwt_decoder.dart'; // Importando jwt_decoder
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -51,8 +52,12 @@ class _LoginPageState extends State<LoginPage> {
         final data = jsonDecode(response.body);
         if (data.containsKey('token') && data['token'].containsKey('token')) {
           final token = data['token']['token'];
+          final decodedToken = JwtDecoder.decode(token);
+          final userId = decodedToken['id'].toString(); // Extraindo userId do token
+
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', token);
+          await prefs.setString('userId', userId);
 
           Navigator.pushReplacement(
             context,
