@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:frontend/pages/home_page.dart'; 
+import 'package:frontend/pages/history_page.dart';
 
 class CustomBottomBar extends StatelessWidget {
   final int currentIndex;
@@ -28,17 +29,19 @@ class CustomBottomBar extends StatelessWidget {
           );
         } else if (index == 1) {
           final ImagePicker picker = ImagePicker();
-          final XFile? image =
-              await picker.pickImage(source: ImageSource.gallery);
+          final XFile? image = await picker.pickImage(source: ImageSource.gallery);
           if (image != null) {
             print('Imagem Selecionada: ${image.path}');
-            onTap(index,
-                image.path); 
+            onTap(index, image.path); 
           } else {
             onTap(index, null); 
           }
-        } else {
-          onTap(index, null); 
+        } else if (index == 2) {
+          // Navegar para a página de histórico
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => HistoricoPage()),
+          );
         }
       },
       items: items,
