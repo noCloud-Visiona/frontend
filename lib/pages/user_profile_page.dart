@@ -65,12 +65,13 @@ class _UserProfilePageState extends State<UserProfilePage> {
   Future<void> _updateUserInfo() async {
     try {
       if (_nameController.text.isEmpty) {
-        showCustomDialog(context, "O nome não pode estar vazio.", null);
+        _showCustomDialog("O nome não pode estar vazio.");
         return;
       }
 
-      if (_passwordController.text.isNotEmpty && _passwordController.text != _confirmPasswordController.text) {
-        showCustomDialog(context, "As senhas não conferem.", null);
+      if (_passwordController.text.isNotEmpty &&
+          _passwordController.text != _confirmPasswordController.text) {
+        _showCustomDialog("As senhas não conferem.");
         return;
       }
 
@@ -87,19 +88,21 @@ class _UserProfilePageState extends State<UserProfilePage> {
           },
           body: jsonEncode({
             'novoNome': _nameController.text,
-            'novaSenha': _passwordController.text.isEmpty ? null : _passwordController.text,
+            'novaSenha': _passwordController.text.isEmpty
+                ? null
+                : _passwordController.text,
           }),
         );
 
         if (response.statusCode == 200) {
-          showCustomDialog(context, "Informações do usuário atualizadas com sucesso!", null);
+          _showCustomDialog("Informações do usuário atualizadas com sucesso!");
         } else {
-          showCustomDialog(context, "Erro ao atualizar as informações: ${response.body}", null);
+          _showCustomDialog("Erro ao atualizar as informações: ${response.body}");
         }
       }
     } catch (e) {
       print('Erro ao atualizar usuário: $e');
-      showCustomDialog(context, "Erro inesperado ao atualizar usuário.", null);
+      _showCustomDialog("Erro inesperado ao atualizar usuário.");
     }
   }
 
@@ -107,6 +110,29 @@ class _UserProfilePageState extends State<UserProfilePage> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.logout();
     Navigator.of(context).pushReplacementNamed('/login');
+  }
+
+  void _showCustomDialog(String message, [VoidCallback? onOkPressed]) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDialog(
+          title: 'Atenção',
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (onOkPressed != null) {
+                  onOkPressed();
+                }
+              },
+              child: const Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -130,12 +156,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
             ),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Nova Senha (opcional)'),
+              decoration:
+                  const InputDecoration(labelText: 'Nova Senha (opcional)'),
               obscureText: true,
             ),
             TextField(
               controller: _confirmPasswordController,
-              decoration: const InputDecoration(labelText: 'Confirme a Nova Senha'),
+              decoration:
+                  const InputDecoration(labelText: 'Confirme a Nova Senha'),
               obscureText: true,
             ),
             const SizedBox(height: 20),

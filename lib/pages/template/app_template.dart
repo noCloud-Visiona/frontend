@@ -5,7 +5,7 @@ import 'package:frontend/pages/analisar_img_page.dart';
 import 'package:frontend/widgets/custom_app_bottombar.dart';
 import 'package:frontend/widgets/custom_app_navbar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path; // Adicione esta linha
+import 'package:path/path.dart' as path;
 
 class AppTemplate extends StatelessWidget {
   final Widget body;
@@ -29,8 +29,6 @@ class AppTemplate extends StatelessWidget {
       final File imageFile = File(imagePath);
       await imageFile.copy(newPath);
 
-      print('Imagem salva: $newPath'); // Log para depuração
-
       return newPath;
     }
   }
@@ -48,14 +46,13 @@ class AppTemplate extends StatelessWidget {
       ),
       body: body,
       bottomNavigationBar: CustomBottomBar(
-        currentIndex: currentIndex, // Índice da página atual
+        currentIndex: currentIndex,
         onTap: (index, imagePath) async {
           if (index == 0) {
             Navigator.pushNamed(context, '/home');
           } else if (index == 1 && imagePath != null) {
             try {
               String savedImagePath = await saveImage(imagePath);
-              print('Navegando para AnalisarImgPage com imgPath: $savedImagePath'); // Log para depuração
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -63,7 +60,6 @@ class AppTemplate extends StatelessWidget {
                 ),
               );
             } catch (e) {
-              print('Erro ao salvar a imagem: $e'); // Log para depuração
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Erro ao salvar a imagem: $e')),
               );

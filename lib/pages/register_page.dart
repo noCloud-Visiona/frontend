@@ -23,14 +23,14 @@ class _RegisterPageState extends State<RegisterPage> {
     if (_nameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty) {
-      showCustomDialog(context, "Por favor, preencha todos os campos.", null);
+      _showErrorDialog("Por favor, preencha todos os campos.");
       return;
     }
 
     // Validando o e-mail com regex
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
     if (!emailRegex.hasMatch(_emailController.text)) {
-      showCustomDialog(context, "E-mail inválido.", null);
+      _showErrorDialog("E-mail inválido.");
       return;
     }
 
@@ -52,26 +52,121 @@ class _RegisterPageState extends State<RegisterPage> {
       );
 
       if (response.statusCode == 201) {
-        showCustomDialog(context, "Usuário cadastrado com sucesso!", () {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => LoginPage()),
-          );
-        });
+        _showSuccessDialog("Usuário cadastrado com sucesso!");
       } else if (response.statusCode == 400) {
         final responseBody = jsonDecode(response.body);
         if (responseBody['message'] == "E-mail já cadastrado") {
-          showCustomDialog(context, "E-mail já cadastrado.", null);
+          _showErrorDialog("E-mail já cadastrado.");
         } else {
-          showCustomDialog(context, "Erro do servidor. Tente novamente.", null);
+          _showErrorDialog("Erro do servidor. Tente novamente.");
         }
       } else {
-        showCustomDialog(context, "Erro do servidor. Tente novamente.", null);
+        _showErrorDialog("Erro do servidor. Tente novamente.");
       }
     } catch (e) {
       print("Erro: $e");
-      showCustomDialog(context, "Erro ao se conectar ao servidor.", null);
+      _showErrorDialog("Erro ao se conectar ao servidor.");
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDialog(
+          title: 'Erro',
+          content: Text(
+            message,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              shadows: [
+                Shadow(
+                  color: Colors.black54,
+                  offset: Offset(2, 2),
+                  blurRadius: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF009D42),
+              ),
+              child: const Text(
+                "Ok",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Roboto',
+                  shadows: [
+                    Shadow(
+                      color: Colors.black54,
+                      offset: Offset(2, 2),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDialog(
+          title: 'Sucesso',
+          content: Text(
+            message,
+            style: const TextStyle(
+              fontFamily: 'Roboto',
+              shadows: [
+                Shadow(
+                  color: Colors.black54,
+                  offset: Offset(2, 2),
+                  blurRadius: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF009D42),
+              ),
+              child: const Text(
+                "Ok",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Roboto',
+                  shadows: [
+                    Shadow(
+                      color: Colors.black54,
+                      offset: Offset(2, 2),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

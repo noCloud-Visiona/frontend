@@ -42,7 +42,8 @@ class _ListUsersPageState extends State<ListUsersPage> {
             users = jsonDecode(response.body);
           });
         } else {
-          showCustomDialog(context, "Erro ao listar usuários: ${response.body}", null);
+          _showCustomDialog("Erro ao listar usuários: ${response.body}");
+          
         }
       }
     } catch (e) {
@@ -72,9 +73,9 @@ class _ListUsersPageState extends State<ListUsersPage> {
           setState(() {
             users!.removeWhere((user) => user['id_usuario'] == userId);
           });
-          showCustomDialog(context, "Usuário deletado com sucesso!", null);
+          _showCustomDialog("Usuário deletado com sucesso!");
         } else {
-          showCustomDialog(context, "Erro ao deletar usuário: ${response.body}", null);
+          _showCustomDialog("Erro ao deletar usuário: ${response.body}");
         }
       }
     } catch (e) {
@@ -101,7 +102,7 @@ class _ListUsersPageState extends State<ListUsersPage> {
         );
 
         if (response.statusCode == 200) {
-          showCustomDialog(context, "Usuário agora é premium!", null);
+          _showCustomDialog("Usuário agora é premium: ${response.body}");
           setState(() {
             final userIndex = users!.indexWhere((user) => user['id_usuario'] == userId);
             if (userIndex != -1) {
@@ -109,12 +110,35 @@ class _ListUsersPageState extends State<ListUsersPage> {
             }
           });
         } else {
-          showCustomDialog(context, "Erro ao tornar usuário premium: ${response.body}", null);
+          _showCustomDialog("Erro ao tornar usuário premium: ${response.body}");
         }
       }
     } catch (e) {
       print('Erro ao tornar usuário premium: $e');
     }
+  }
+
+ void _showCustomDialog(String message, [VoidCallback? onOkPressed]) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDialog(
+          title: 'Atenção',
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (onOkPressed != null) {
+                  onOkPressed();
+                }
+              },
+              child: const Text('Ok'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
