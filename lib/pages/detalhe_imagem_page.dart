@@ -28,6 +28,10 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
     imageData = widget.data;
   }
 
+  String _extractFileName(String url) {
+    return url.split('/').last;
+  }
+
   Future<void> _downloadImage(String url) async {
     try {
       // Solicitar permissões de armazenamento
@@ -40,11 +44,12 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
 
         final response = await http.get(Uri.parse(url));
         if (response.statusCode == 200) {
-          final filePath = '$selectedDirectory/downloaded_image.png';
+          final fileName = _extractFileName(url);
+          final filePath = '$selectedDirectory/$fileName';
           final file = File(filePath);
           await file.writeAsBytes(response.bodyBytes);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Imagem baixada com sucesso!')),
+            SnackBar(content: Text('Download realizado com sucesso!')),
           );
           print('Imagem salva em: $filePath');
         } else {
@@ -120,6 +125,7 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                   label: const Text('Download'),
                   onPressed: () {
                     if (_isSelected && imageData != null && imageData!['img_tratada'] != null) {
+                      Navigator.of(context).pop(); // Fechar o diálogo
                       _downloadImage(imageData!['img_tratada']);
                     }
                   },
