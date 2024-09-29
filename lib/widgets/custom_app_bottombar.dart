@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:frontend/pages/home_page.dart'; 
 
 class CustomBottomBar extends StatelessWidget {
   final int currentIndex;
@@ -19,35 +20,28 @@ class CustomBottomBar extends StatelessWidget {
       backgroundColor: const Color(0xFF176B87),
       currentIndex: currentIndex,
       onTap: (index) async {
-        if (index == 1) {
+        if (index == 0) {
+          // Navegar para a HomePage
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } else if (index == 1) {
           final ImagePicker picker = ImagePicker();
           final XFile? image =
               await picker.pickImage(source: ImageSource.gallery);
           if (image != null) {
             print('Imagem Selecionada: ${image.path}');
             onTap(index,
-                image.path); // Passa o caminho da imagem para a função onTap
+                image.path); 
           } else {
-            onTap(index, null); // Passa null se nenhuma imagem for selecionada
+            onTap(index, null); 
           }
         } else {
-          onTap(index, null); // Passa null para outros índices
+          onTap(index, null); 
         }
       },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home, color: Colors.white),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.image, color: Colors.white),
-          label: 'Imagem',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.list, color: Colors.white),
-          label: 'Lista',
-        ),
-      ],
+      items: items,
       selectedItemColor: Colors.white,
       unselectedItemColor: Colors.white,
     );
