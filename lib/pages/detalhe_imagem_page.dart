@@ -2,7 +2,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/custom_img_detail_table.dart';
 import 'package:frontend/pages/template/app_template.dart';
-import 'package:frontend/widgets/custom_dialog.dart'; // Importe o CustomDialog
+import 'package:frontend/widgets/custom_dialog.dart';
+import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
 
 class DetalheImgPage extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -22,6 +26,45 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
   void initState() {
     super.initState();
     imageData = widget.data;
+  }
+
+  Future<void> _downloadImage(String url) async {
+    try {
+      // Solicitar permissões de armazenamento
+      if (await Permission.storage.request().isGranted) {
+        String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+        if (selectedDirectory == null) {
+          // Usuário cancelou a seleção do diretório
+          return;
+        }
+
+        final response = await http.get(Uri.parse(url));
+        if (response.statusCode == 200) {
+          final filePath = '$selectedDirectory/downloaded_image.png';
+          final file = File(filePath);
+          await file.writeAsBytes(response.bodyBytes);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Imagem baixada com sucesso!')),
+          );
+          print('Imagem salva em: $filePath');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao baixar a imagem: ${response.statusCode}')),
+          );
+          print('Erro ao baixar a imagem: ${response.statusCode}');
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Permissão de armazenamento negada')),
+        );
+        print('Permissão de armazenamento negada');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao baixar a imagem: $e')),
+      );
+      print('Erro ao baixar a imagem: $e');
+    }
   }
 
   void _showDownloadDialog() {
@@ -44,12 +87,13 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                     },
                   ),
                   const SizedBox(width: 10),
-                  Image.memory(
-                    widget.imageBytes!,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  ),
+                  if (imageData != null && imageData!['img_tratada'] != null)
+                    Image.network(
+                      imageData!['img_tratada'],
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
                 ],
               ),
               actions: [
@@ -75,7 +119,9 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                   icon: const Icon(Icons.download),
                   label: const Text('Download'),
                   onPressed: () {
-                    // Lógica para download
+                    if (_isSelected && imageData != null && imageData!['img_tratada'] != null) {
+                      _downloadImage(imageData!['img_tratada']);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF176B87),
@@ -108,9 +154,9 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
-                  if (widget.imageBytes != null)
-                    Image.memory(
-                      widget.imageBytes!,
+                  if (imageData!['img_tratada'] != null)
+                    Image.network(
+                      imageData!['img_tratada'],
                       width: 300,
                       height: 300,
                       fit: BoxFit.cover,
