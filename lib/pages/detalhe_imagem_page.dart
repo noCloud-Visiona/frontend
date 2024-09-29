@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:frontend/widgets/custom_img_detail_table.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:frontend/widgets/custom_dialog.dart';
-import 'package:http/http.dart' as http;
-import 'package:file_picker/file_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'dart:io';
+import 'package:frontend/widgets/download_button.dart';
+import 'package:frontend/utils/download_utils.dart'; // Importando o arquivo utilitário
 
 class DetalheImgPage extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -26,50 +24,6 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
   void initState() {
     super.initState();
     imageData = widget.data;
-  }
-
-  String _extractFileName(String url) {
-    return url.split('/').last;
-  }
-
-  Future<void> _downloadImage(String url) async {
-    try {
-      // Solicitar permissões de armazenamento
-      if (await Permission.storage.request().isGranted) {
-        String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-        if (selectedDirectory == null) {
-          // Usuário cancelou a seleção do diretório
-          return;
-        }
-
-        final response = await http.get(Uri.parse(url));
-        if (response.statusCode == 200) {
-          final fileName = _extractFileName(url);
-          final filePath = '$selectedDirectory/$fileName';
-          final file = File(filePath);
-          await file.writeAsBytes(response.bodyBytes);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Download realizado com sucesso!')),
-          );
-          print('Imagem salva em: $filePath');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Erro ao baixar a imagem: ${response.statusCode}')),
-          );
-          print('Erro ao baixar a imagem: ${response.statusCode}');
-        }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Permissão de armazenamento negada')),
-        );
-        print('Permissão de armazenamento negada');
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao baixar a imagem: $e')),
-      );
-      print('Erro ao baixar a imagem: $e');
-    }
   }
 
   void _showDownloadDialog() {
@@ -106,7 +60,8 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                   icon: const Icon(Icons.picture_as_pdf),
                   label: const Text('PDF'),
                   onPressed: () {
-                    // Lógica para download em PDF
+                    Navigator.of(context).pop(); 
+                    generatePdf(context, imageData!);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF176B87),
@@ -126,7 +81,7 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                   onPressed: () {
                     if (_isSelected && imageData != null && imageData!['img_tratada'] != null) {
                       Navigator.of(context).pop(); // Fechar o diálogo
-                      _downloadImage(imageData!['img_tratada']);
+                      downloadImage(context, imageData!['img_tratada']); // Usando a função importada
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -186,20 +141,10 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        ElevatedButton(
-                          onPressed: _showDownloadDialog,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF176B87),
-                            foregroundColor: Colors.white,
-                            shadowColor: Colors.black,
-                            elevation: 5,
-                            side: const BorderSide(color: Colors.white, width: 1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10), 
-                            ),
-                            minimumSize: const Size(48 , 48),
-                          ),
-                          child: const Icon(Icons.download, color: Colors.white),
+                        DownloadButton(
+                          onDownloadImage: () => downloadImage(context, imageData!['img_tratada']),
+                          onDownloadPdf: () => generatePdf(context, imageData!),
+                          onDownload: _showDownloadDialog,
                         ),
                       ],
                     ),
