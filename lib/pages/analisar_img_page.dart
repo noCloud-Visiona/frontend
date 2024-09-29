@@ -88,7 +88,6 @@ class AnalisarImgPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Exibindo imagem em AnalisarImgPage com imgPath: $imgPath'); // Log para depuração
 
     return AppTemplate(
       body: Center(

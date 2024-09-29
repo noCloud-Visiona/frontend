@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Importando SharedPreferences
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/pages/home_page.dart';
 import 'register_page.dart';
 import '../widgets/custom_app_navbar.dart';
 import '../widgets/custom_dialog.dart';
-import 'package:jwt_decoder/jwt_decoder.dart'; // Importando jwt_decoder
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -41,7 +43,8 @@ class _LoginPageState extends State<LoginPage> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailController.text,
-          'senha': _passwordController.text, // Certifique-se de que o campo é 'senha' e não 'password'
+          'senha': _passwordController
+              .text, // Certifique-se de que o campo é 'senha' e não 'password'
         }),
       );
 
@@ -54,6 +57,9 @@ class _LoginPageState extends State<LoginPage> {
           final token = data['token']['token'];
           final decodedToken = JwtDecoder.decode(token);
           final userId = decodedToken['id'].toString(); // Extraindo userId do token
+
+          // Armazenando o token no AuthProvider
+          Provider.of<AuthProvider>(context, listen: false).setJwtToken(token);
 
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', token);
@@ -68,11 +74,13 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         final responseBody = jsonDecode(response.body);
-        _showErrorDialog(responseBody['mensagem'] ?? "Falha no login. Verifique suas credenciais.");
+        _showErrorDialog(responseBody['mensagem'] ??
+            "Falha no login. Verifique suas credenciais.");
       }
     } catch (e) {
       print("Erro: $e");
-      _showErrorDialog("Erro ao conectar ao servidor. Tente novamente mais tarde.");
+      _showErrorDialog(
+          "Erro ao conectar ao servidor. Tente novamente mais tarde.");
     }
   }
 
