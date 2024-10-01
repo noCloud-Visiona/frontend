@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/pages/analisar_img_page.dart';
 import 'package:frontend/pages/history_page.dart';
 import 'package:frontend/pages/login_page.dart';
+import 'package:frontend/utils/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/auth_provider.dart';
 
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
             titleLarge: TextStyle(color: Colors.white),
           ),
         ),
-        home: const LoginPage(),
+        home: const SplashScreen(), // Usar a tela de splash como a tela inicial
         routes: {
           '/analisar': (context) {
             final args = ModalRoute.of(context)!.settings.arguments

@@ -64,6 +64,7 @@ class AnalisarImgPage extends StatelessWidget {
           imageBytes = response.bodyBytes;
         }
 
+        Navigator.pop(context); // Fechar o diálogo de carregamento
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -74,21 +75,49 @@ class AnalisarImgPage extends StatelessWidget {
           ),
         );
       } else {
-        print('Erro ao enviar imagem: ${streamedResponse.statusCode}');
-        print('Erro ao enviar imagem: ${streamedResponse.reasonPhrase}');
+        Navigator.pop(context); // Fechar o diálogo de carregamento
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao enviar imagem: ${streamedResponse.reasonPhrase}')),
+        );
       }
     } on TimeoutException catch (e) {
-      print('Erro: Tempo limite excedido: $e');
+      Navigator.pop(context); // Fechar o diálogo de carregamento
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: Tempo limite excedido: $e')),
+      );
     } on http.ClientException catch (e) {
-      print('Erro: ClientException: $e');
+      Navigator.pop(context); // Fechar o diálogo de carregamento
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: ClientException: $e')),
+      );
     } catch (e) {
-      print('Erro: $e');
+      Navigator.pop(context); // Fechar o diálogo de carregamento
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: $e')),
+      );
     }
+  }
+
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Row(
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text('Processando imagem...'),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-
     return AppTemplate(
       body: Center(
         child: Column(
@@ -110,7 +139,10 @@ class AnalisarImgPage extends StatelessWidget {
               ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => _analisarImagem(context),
+              onPressed: () {
+                _showLoadingDialog(context);
+                _analisarImagem(context);
+              },
               child: const Text('Analisar'),
             ),
           ],
