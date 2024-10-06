@@ -3,106 +3,71 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:pdf/pdf.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file/open_file.dart';
 
-Future<bool> _requestStoragePermission(BuildContext context) async {
-  var status = await Permission.storage.status;
-  if (!status.isGranted) {
-    status = await Permission.storage.request();
-  }
+Future<void> downloadImage(BuildContext context, String url) async {
+  try {
+    // Oferecer ao usuário a opção de selecionar o diretório
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    if (selectedDirectory == null) {
+      // Usuário cancelou a seleção do diretório
+      return;
+    }
 
-  if (!status.isGranted) {
-    bool? openSettings = await showDialog(
+    // Mostrar barra de progresso
+    showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Permissão Necessária'),
-          content: const Text(
-              'Este aplicativo precisa de acesso ao armazenamento para baixar arquivos. Deseja permitir o acesso?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Não'),
+        return const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Baixando imagem...'),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Sim'),
-            ),
-          ],
+          ),
         );
       },
     );
 
-    if (openSettings == true) {
-      await openAppSettings();
-    }
+    final response = await http.get(Uri.parse(url));
+    Navigator.of(context).pop(); // Fechar a barra de progresso
 
-    return false;
-  }
-  return true;
-}
+    if (response.statusCode == 200) {
+      final fileName = '${url.split('/').last.split('.').first}.png';
+      final filePath = '$selectedDirectory/$fileName';
+      final file = File(filePath);
+      await file.writeAsBytes(response.bodyBytes);
 
-Future<void> downloadImage(BuildContext context, String url) async {
-  try {
-    // Solicitar permissões de armazenamento
-    if (await _requestStoragePermission(context)) {
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-      if (selectedDirectory == null) {
-        // Usuário cancelou a seleção do diretório
-        return;
-      }
-
-      // Mostrar barra de progresso
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return const Dialog(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Baixando imagem...'),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-
-      final response = await http.get(Uri.parse(url));
-      Navigator.of(context).pop(); // Fechar a barra de progresso
-
-      if (response.statusCode == 200) {
-        final fileName = url.split('/').last;
-        final filePath = '$selectedDirectory/$fileName';
-        final file = File(filePath);
-        await file.writeAsBytes(response.bodyBytes);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Download realizado com sucesso!'),
-            action: SnackBarAction(
-              label: 'Abrir',
-              onPressed: () {
-                OpenFile.open(filePath);
-              },
-            ),
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Download realizado com sucesso!'),
+          action: SnackBarAction(
+            label: 'Abrir',
+            onPressed: () async {
+              final result = await OpenFile.open(filePath);
+              if (result.type != ResultType.done) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Erro ao abrir o arquivo: ${result.message}')),
+                );
+              }
+            },
           ),
-        );
-        print('Imagem salva em: $filePath');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Erro ao baixar a imagem: ${response.statusCode}')),
-        );
-        print('Erro ao baixar a imagem: ${response.statusCode}');
-      }
+        ),
+      );
+      print('Imagem salva em: $filePath');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Erro ao baixar a imagem: ${response.statusCode}')),
+      );
+      print('Erro ao baixar a imagem: ${response.statusCode}');
     }
   } catch (e) {
     Navigator.of(context).pop(); // Fechar a barra de progresso em caso de erro
@@ -228,33 +193,59 @@ Future<void> generatePdf(
     ),
   );
 
-  // Solicitar permissões de armazenamento
-  if (await _requestStoragePermission(context)) {
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-    if (selectedDirectory == null) {
-      // Usuário cancelou a seleção do diretório
-      return;
-    }
-
-    // Usar a ID da análise como parte do nome do arquivo
-    final fileName = '${imageData['id'] ?? 'sem_id'}.pdf';
-    final filePath = '$selectedDirectory/$fileName';
-    final file = File(filePath);
-    await file.writeAsBytes(await pdf.save());
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('PDF gerado com sucesso!'),
-        action: SnackBarAction(
-          label: 'Abrir',
-          onPressed: () {
-            OpenFile.open(filePath);
-          },
-        ),
-      ),
-    );
-    print('PDF salvo em: $filePath');
+  // Oferecer ao usuário a opção de selecionar o diretório
+  String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+  if (selectedDirectory == null) {
+    // Usuário cancelou a seleção do diretório
+    return;
   }
+
+  // Mostrar barra de progresso
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return const Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Gerando PDF...'),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+
+  // Usar a ID da análise como parte do nome do arquivo
+  final fileName = '${imageData['id'] ?? 'sem_id'}.pdf';
+  final filePath = '$selectedDirectory/$fileName';
+  final file = File(filePath);
+  await file.writeAsBytes(await pdf.save());
+
+  Navigator.of(context).pop(); // Fechar a barra de progresso
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: const Text('PDF gerado com sucesso!'),
+      action: SnackBarAction(
+        label: 'Abrir',
+        onPressed: () async {
+          final result = await OpenFile.open(filePath);
+          if (result.type != ResultType.done) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Erro ao abrir o arquivo: ${result.message}')),
+            );
+          }
+        },
+      ),
+    ),
+  );
+  print('PDF salvo em: $filePath');
 }
 
 Future<pw.ImageProvider> networkImage(String url) async {

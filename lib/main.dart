@@ -57,7 +57,7 @@ class MyApp extends StatelessWidget {
       return const LoginPage();
     } else {
       // Se for um dispositivo móvel, abre a SplashScreen
-      return const SplashScreen();
+      return const LoginPage();
     }
   }
 }
