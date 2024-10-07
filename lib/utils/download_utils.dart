@@ -7,10 +7,47 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file/open_file.dart';
 
+Future<bool> _requestStoragePermission(BuildContext context) async {
+  var status = await Permission.storage.status;
+  if (!status.isGranted) {
+    status = await Permission.storage.request();
+  }
+
+  if (!status.isGranted) {
+    bool? openSettings = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Permissão Necessária'),
+          content: const Text(
+              'Este aplicativo precisa de acesso ao armazenamento para baixar arquivos. Deseja permitir o acesso?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Não'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Sim'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (openSettings == true) {
+      await openAppSettings();
+    }
+
+    return false;
+  }
+  return true;
+}
+
 Future<void> downloadImage(BuildContext context, String url) async {
   try {
     // Solicitar permissões de armazenamento
-    if (await Permission.storage.request().isGranted) {
+    if (await _requestStoragePermission(context)) {
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
       if (selectedDirectory == null) {
         // Usuário cancelou a seleção do diretório
@@ -66,11 +103,6 @@ Future<void> downloadImage(BuildContext context, String url) async {
         );
         print('Erro ao baixar a imagem: ${response.statusCode}');
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Permissão de armazenamento negada')),
-      );
-      print('Permissão de armazenamento negada');
     }
   } catch (e) {
     Navigator.of(context).pop(); // Fechar a barra de progresso em caso de erro
@@ -197,7 +229,7 @@ Future<void> generatePdf(
   );
 
   // Solicitar permissões de armazenamento
-  if (await Permission.storage.request().isGranted) {
+  if (await _requestStoragePermission(context)) {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory == null) {
       // Usuário cancelou a seleção do diretório
@@ -222,11 +254,6 @@ Future<void> generatePdf(
       ),
     );
     print('PDF salvo em: $filePath');
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Permissão de armazenamento negada')),
-    );
-    print('Permissão de armazenamento negada');
   }
 }
 
