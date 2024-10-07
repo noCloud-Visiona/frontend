@@ -53,6 +53,7 @@ dependencies:
   pdf: ^3.11.1
   flutter_local_notifications: ^17.2.3
   open_file: ^3.5.7
+  universal_html: ^2.2.4
 
 dev_dependencies:
   flutter_test:
