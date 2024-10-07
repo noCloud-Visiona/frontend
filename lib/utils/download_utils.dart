@@ -7,7 +7,6 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file/open_file.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:universal_html/html.dart' as html; // Para baixar no Web
-import 'package:path_provider/path_provider.dart'; // Para Android
 
 // Função para baixar imagens tanto no Android quanto no Web
 Future<void> downloadImage(BuildContext context, String url) async {
@@ -116,8 +115,8 @@ Future<void> generatePdf(BuildContext context, Map<String, dynamic> imageData) a
             pw.Table(
               border: pw.TableBorder.all(),
               columnWidths: {
-                0: pw.FlexColumnWidth(1),
-                1: pw.FlexColumnWidth(3),
+                0: const pw.FlexColumnWidth(1),
+                1: const pw.FlexColumnWidth(3),
               },
               children: [
                 pw.TableRow(
