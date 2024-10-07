@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,6 +14,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   double _zoomLevel = 13.0;
   final MapController _mapController = MapController();
+
+  final String _mapboxToken = dotenv.env["MAPBOX_TOKEN"] ?? '';
 
   void _zoomIn() {
     setState(() {
@@ -50,8 +53,10 @@ class _HomePageState extends State<HomePage> {
             children: [
               TileLayer(
                 urlTemplate:
-                    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                subdomains: const ['a', 'b', 'c'],
+                   'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token={accessToken}',
+                additionalOptions: {
+                  'accessToken': _mapboxToken,
+                },
               ),
             ],
           ),
