@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -44,18 +45,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   String _getLayerUrl() {
-  switch (_currentLayer) {
-    case 'hybrid':
-      return 'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
-    case 'satellite':
-      return 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
-    case 'streets':
-      return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
-    default:
-      return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+    switch (_currentLayer) {
+      case 'hybrid':
+        return 'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+      case 'satellite':
+        return 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+      case 'streets':
+        return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+      default:
+        return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -78,6 +78,7 @@ class _HomePageState extends State<HomePage> {
                   'accessToken': _mapboxToken,
                 },
                 subdomains: const ['a', 'b', 'c'],
+                tileProvider: CancellableNetworkTileProvider(),
               ),
             ],
           ),
