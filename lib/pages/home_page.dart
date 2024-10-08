@@ -4,6 +4,7 @@ import 'package:frontend/pages/template/app_template.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
+import 'package:frontend/utils/search_utils.dart'; // Importar o novo arquivo
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -57,6 +58,11 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _onDateRangeSelected(DateTime startDate, DateTime endDate) {
+    // Lógica futura para enviar as datas para o backend
+    print('Data Início: $startDate, Data Final: $endDate');
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppTemplate(
@@ -83,41 +89,48 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           Positioned(
+            left: 10,
             right: 10,
             top: 10,
-            child: FloatingActionButton(
-              heroTag: 'layerButton',
-              onPressed: () {},
-              mini: true,
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF176B87),
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(
-                    color: Color(0xFF176B87),
-                    width: 1), // Adiciona a borda de 1px
-              ),
-              child: PopupMenuButton<String>(
-                icon: const Icon(Icons.layers),
-                onSelected: _changeLayer,
-                itemBuilder: (BuildContext context) {
-                  return [
-                    const PopupMenuItem(
-                      value: 'hybrid',
-                      child: Text('Híbrido'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'satellite',
-                      child: Text('Satélite'),
-                    ),
-                    const PopupMenuItem(
-                      value: 'streets',
-                      child: Text('Ruas'),
-                    ),
-                  ];
-                },
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribui os elementos com espaço entre eles
+              children: [
+                DateRangeSelector(onDateRangeSelected: _onDateRangeSelected),
+                FloatingActionButton(
+                  heroTag: 'layerButton',
+                  onPressed: () {},
+                  mini: true,
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF176B87),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(
+                        color: Color(0xFF176B87),
+                        width: 1), // Adiciona a borda de 1px
+                  ),
+                  child: PopupMenuButton<String>(
+                    icon: const Icon(Icons.layers),
+                    onSelected: _changeLayer,
+                    itemBuilder: (BuildContext context) {
+                      return [
+                        const PopupMenuItem(
+                          value: 'hybrid',
+                          child: Text('Híbrido'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'satellite',
+                          child: Text('Satélite'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'streets',
+                          child: Text('Ruas'),
+                        ),
+                      ];
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
           Positioned(
