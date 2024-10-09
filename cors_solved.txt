@@ -1,0 +1,14 @@
+Para resolver o problema de CORS ao visualizar imagens do Firebase, utilie o comando gsutil para aplicar a consiguração de CORS ao bucket Firebase Storage:
+
+gsutil cors set cors-config.json gs://nocloud-90bb5.appspot.com
+
+Caso tenha problemas com o comando gsutil:
+
+Passos para Instalar o Google Cloud SDK no Windows
+Baixar o Instalador do Google Cloud SDK: Vá para a página de download do Google Cloud SDK: Google Cloud SDK
+
+Executar o Instalador: Baixe e execute o instalador para Windows. Siga as instruções na tela para concluir a instalação.
+
+Adicionar o Google Cloud SDK ao PATH: Durante a instalação, certifique-se de marcar a opção para adicionar o Google Cloud SDK ao PATH. Isso permitirá que você execute o comando gcloud a partir do terminal.
+
+Reiniciar o Terminal: Após a instalação, feche e reabra o terminal para garantir que as mudanças no PATH sejam aplicadas.

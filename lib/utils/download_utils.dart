@@ -3,55 +3,40 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:pdf/pdf.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:open_file/open_file.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:universal_html/html.dart' as html; // Para baixar no Web
 
-Future<bool> _requestStoragePermission(BuildContext context) async {
-  var status = await Permission.storage.status;
-  if (!status.isGranted) {
-    status = await Permission.storage.request();
-  }
-
-  if (!status.isGranted) {
-    bool? openSettings = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Permissão Necessária'),
-          content: const Text(
-              'Este aplicativo precisa de acesso ao armazenamento para baixar arquivos. Deseja permitir o acesso?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Não'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Sim'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (openSettings == true) {
-      await openAppSettings();
-    }
-
-    return false;
-  }
-  return true;
-}
-
+// Função para baixar imagens tanto no Android quanto no Web
 Future<void> downloadImage(BuildContext context, String url) async {
   try {
-    // Solicitar permissões de armazenamento
-    if (await _requestStoragePermission(context)) {
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    String? selectedDirectory;
+
+    if (kIsWeb) {
+      // Web: Criar um link de download e baixar a imagem no navegador
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final blob = html.Blob([response.bodyBytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute("download", "imagem.png")
+          ..click();
+        html.Url.revokeObjectUrl(url);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Imagem baixada com sucesso!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao baixar a imagem: ${response.statusCode}')),
+        );
+      }
+    } else {
+      // Android/iOS: Oferecer ao usuário a opção de selecionar o diretório
+      selectedDirectory = await FilePicker.platform.getDirectoryPath();
       if (selectedDirectory == null) {
-        // Usuário cancelou a seleção do diretório
-        return;
+        return; // Usuário cancelou a seleção
       }
 
       // Mostrar barra de progresso
@@ -79,7 +64,7 @@ Future<void> downloadImage(BuildContext context, String url) async {
       Navigator.of(context).pop(); // Fechar a barra de progresso
 
       if (response.statusCode == 200) {
-        final fileName = url.split('/').last;
+        final fileName = '${url.split('/').last.split('.').first}.png';
         final filePath = '$selectedDirectory/$fileName';
         final file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
@@ -89,32 +74,32 @@ Future<void> downloadImage(BuildContext context, String url) async {
             content: const Text('Download realizado com sucesso!'),
             action: SnackBarAction(
               label: 'Abrir',
-              onPressed: () {
-                OpenFile.open(filePath);
+              onPressed: () async {
+                final result = await OpenFile.open(filePath);
+                if (result.type != ResultType.done) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro ao abrir o arquivo: ${result.message}')),
+                  );
+                }
               },
             ),
           ),
         );
-        print('Imagem salva em: $filePath');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Erro ao baixar a imagem: ${response.statusCode}')),
+          SnackBar(content: Text('Erro ao baixar a imagem: ${response.statusCode}')),
         );
-        print('Erro ao baixar a imagem: ${response.statusCode}');
       }
     }
   } catch (e) {
-    Navigator.of(context).pop(); // Fechar a barra de progresso em caso de erro
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Erro ao baixar a imagem: $e')),
     );
-    print('Erro ao baixar a imagem: $e');
   }
 }
 
-Future<void> generatePdf(
-    BuildContext context, Map<String, dynamic> imageData) async {
+// Função para gerar e salvar o PDF tanto no Android quanto no Web
+Future<void> generatePdf(BuildContext context, Map<String, dynamic> imageData) async {
   final pdf = pw.Document();
   final image = imageData['img_tratada'] != null
       ? (await networkImage(imageData['img_tratada']))
@@ -130,8 +115,8 @@ Future<void> generatePdf(
             pw.Table(
               border: pw.TableBorder.all(),
               columnWidths: {
-                0: pw.FlexColumnWidth(1),
-                1: pw.FlexColumnWidth(3),
+                0: const pw.FlexColumnWidth(1),
+                1: const pw.FlexColumnWidth(3),
               },
               children: [
                 pw.TableRow(
@@ -228,15 +213,26 @@ Future<void> generatePdf(
     ),
   );
 
-  // Solicitar permissões de armazenamento
-  if (await _requestStoragePermission(context)) {
+  if (kIsWeb) {
+    // Web: Criar um link de download para o PDF
+    final bytes = await pdf.save();
+    final blob = html.Blob([bytes], 'application/pdf');
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute("download", "${imageData['id'] ?? 'sem_id'}.pdf")
+      ..click();
+    html.Url.revokeObjectUrl(url);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('PDF gerado e baixado com sucesso!')),
+    );
+  } else {
+    // Android/iOS: Oferecer ao usuário a opção de selecionar o diretório
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
     if (selectedDirectory == null) {
-      // Usuário cancelou a seleção do diretório
       return;
     }
 
-    // Usar a ID da análise como parte do nome do arquivo
     final fileName = '${imageData['id'] ?? 'sem_id'}.pdf';
     final filePath = '$selectedDirectory/$fileName';
     final file = File(filePath);
@@ -247,16 +243,21 @@ Future<void> generatePdf(
         content: const Text('PDF gerado com sucesso!'),
         action: SnackBarAction(
           label: 'Abrir',
-          onPressed: () {
-            OpenFile.open(filePath);
+          onPressed: () async {
+            final result = await OpenFile.open(filePath);
+            if (result.type != ResultType.done) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Erro ao abrir o arquivo: ${result.message}')),
+              );
+            }
           },
         ),
       ),
     );
-    print('PDF salvo em: $filePath');
   }
 }
 
+// Função auxiliar para carregar uma imagem da internet e convertê-la para pw.ImageProvider
 Future<pw.ImageProvider> networkImage(String url) async {
   final response = await http.get(Uri.parse(url));
   if (response.statusCode == 200) {
