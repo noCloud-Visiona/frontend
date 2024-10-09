@@ -4,7 +4,7 @@ import 'package:frontend/pages/template/app_template.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
-import 'package:frontend/utils/search_utils.dart'; // Importar o novo arquivo
+import 'package:frontend/utils/search_utils.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -20,6 +20,10 @@ class _HomePageState extends State<HomePage> {
   final String _mapboxToken = dotenv.env["MAPBOX_TOKEN"] ?? '';
 
   String _currentLayer = 'hybrid';
+
+  LatLng? _startPoint;
+  LatLng? _endPoint;
+  bool _isDrawing = false;
 
   void _zoomIn() {
     setState(() {
@@ -63,6 +67,29 @@ class _HomePageState extends State<HomePage> {
     print('Data Início: $startDate, Data Final: $endDate');
   }
 
+  void _startDrawing() {
+    setState(() {
+      _isDrawing = !_isDrawing;
+      if (!_isDrawing) {
+        _startPoint = null;
+        _endPoint = null;
+      }
+    });
+  }
+
+  void _onTap(TapPosition tapPosition, LatLng point) {
+    if (_isDrawing) {
+      setState(() {
+        if (_startPoint == null) {
+          _startPoint = point;
+        } else {
+          _endPoint = point;
+          _isDrawing = false;
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppTemplate(
@@ -76,6 +103,7 @@ class _HomePageState extends State<HomePage> {
               initialZoom: _zoomLevel,
               maxZoom: 18.0,
               minZoom: 3.0,
+              onTap: _onTap,
             ),
             children: [
               TileLayer(
@@ -86,16 +114,39 @@ class _HomePageState extends State<HomePage> {
                 subdomains: const ['a', 'b', 'c'],
                 tileProvider: CancellableNetworkTileProvider(),
               ),
+              if (_startPoint != null && _endPoint != null)
+                PolygonLayer(
+                  polygons: [
+                    Polygon(
+                      points: [
+                        _startPoint!,
+                        LatLng(_startPoint!.latitude, _endPoint!.longitude),
+                        _endPoint!,
+                        LatLng(_endPoint!.latitude, _startPoint!.longitude),
+                      ],
+                      color: Colors.blue.withOpacity(0.3),
+                      borderStrokeWidth: 2.0,
+                      borderColor: Colors.blue,
+                    ),
+                  ],
+                ),
             ],
           ),
           Positioned(
             left: 10,
-            right: 10,
             top: 10,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribui os elementos com espaço entre eles
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 DateRangeSelector(onDateRangeSelected: _onDateRangeSelected),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 10,
+            top: 10,
+            child: Column(
+              children: [
                 FloatingActionButton(
                   heroTag: 'layerButton',
                   onPressed: () {},
@@ -129,6 +180,23 @@ class _HomePageState extends State<HomePage> {
                       ];
                     },
                   ),
+                ),
+                const SizedBox(height: 8),
+                FloatingActionButton(
+                  heroTag: 'drawButton',
+                  onPressed: _startDrawing,
+                  mini: true,
+                  backgroundColor: _isDrawing ? const Color(0xFF176B87) : Colors.white,
+                  foregroundColor: _isDrawing ? Colors.white : const Color(0xFF176B87),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(
+                      color: _isDrawing ? Colors.white : const Color(0xFF176B87),
+                      width: 1,
+                    ), // Adiciona a borda de 1px
+                  ),
+                  child: const Icon(Icons.crop_square),
                 ),
               ],
             ),
