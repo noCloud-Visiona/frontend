@@ -5,6 +5,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:frontend/utils/search_utils.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -65,6 +67,9 @@ class _HomePageState extends State<HomePage> {
   void _onDateRangeSelected(DateTime startDate, DateTime endDate) {
     // Lógica futura para enviar as datas para o backend
     print('Data Início: $startDate, Data Final: $endDate');
+    if (_startPoint != null && _endPoint != null) {
+      _fetchDataFromINPE(startDate, endDate, _startPoint!, _endPoint!);
+    }
   }
 
   void _startDrawing() {
@@ -87,6 +92,37 @@ class _HomePageState extends State<HomePage> {
           _isDrawing = false;
         }
       });
+    }
+  }
+
+  Future<void> _fetchDataFromINPE(DateTime startDate, DateTime endDate, LatLng startPoint, LatLng endPoint) async {
+    final String startDateString = startDate.toIso8601String().split('T').first;
+    final String endDateString = endDate.toIso8601String().split('T').first;
+    final String bbox = '${startPoint.longitude},${startPoint.latitude},${endPoint.longitude},${endPoint.latitude}';
+    final String url = 'https://data.inpe.br/bdc/stac/v1/search?collections=CB4A-WPM-PCA-FUSED-1&datetime=$startDateString/$endDateString&bbox=$bbox';
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print('Dados recebidos: $data');
+        // Processar os dados conforme necessário
+      } else {
+        print('Erro na solicitação: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erro na solicitação: $e');
+    }
+  }
+
+  void _onSearchButtonPressed() {
+    if (_startPoint != null && _endPoint != null) {
+      // Para fins de demonstração, usaremos datas fixas
+      DateTime startDate = DateTime(2024, 5, 1);
+      DateTime endDate = DateTime(2024, 5, 15);
+      _fetchDataFromINPE(startDate, endDate, _startPoint!, _endPoint!);
+    } else {
+      print('Selecione uma área no mapa primeiro.');
     }
   }
 
@@ -238,6 +274,25 @@ class _HomePageState extends State<HomePage> {
                   child: const Icon(Icons.zoom_out),
                 ),
               ],
+            ),
+          ),
+          Positioned(
+            right: 10,
+            bottom: 10,
+            child: FloatingActionButton(
+              heroTag: 'searchButton',
+              onPressed: _onSearchButtonPressed,
+              mini: true,
+              foregroundColor: Colors.white,
+              backgroundColor: const Color(0xFF176B87),
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(
+                    color: Colors.white,
+                    width: 1), // Adiciona a borda de 1px
+              ),
+              child: const Icon(Icons.search),
             ),
           ),
         ],
