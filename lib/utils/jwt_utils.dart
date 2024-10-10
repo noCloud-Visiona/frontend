@@ -13,8 +13,8 @@ void printTokenInfo(String token) {
     Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
 
     // Imprime o token inteiro decodificado
-    print("Token Decodificado:");
-    print(decodedToken);
+    //print("Token Decodificado:");
+    //print(decodedToken);
   } else {
     print("O token está expirado.");
   }
