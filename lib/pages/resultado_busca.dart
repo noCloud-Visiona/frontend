@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:frontend/pages/template/app_template.dart';
 
 class ResultadoBuscaPage extends StatelessWidget {
   final DateTime startDate;
@@ -19,43 +20,46 @@ class ResultadoBuscaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Resultados da Pesquisa'),
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Data: ${startDate.toIso8601String().split('T').first} - ${endDate.toIso8601String().split('T').first}',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+    return AppTemplate(
+      currentIndex: 0,
+      body: Scaffold(
+        appBar: AppBar(
+          title: const Text('Resultados da Pesquisa'),
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Data: ${startDate.toIso8601String().split('T').first} - ${endDate.toIso8601String().split('T').first}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Coordenadas: (${startPoint.latitude}, ${startPoint.longitude}) - (${endPoint.latitude}, ${endPoint.longitude})',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Coordenadas: (${startPoint.latitude}, ${startPoint.longitude}) - (${endPoint.latitude}, ${endPoint.longitude})',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: features.length,
-              itemBuilder: (context, index) {
-                final feature = features[index];
-                final id = feature['id'];
-                final thumbnailUrl = feature['assets']['thumbnail']['href'];
+            Expanded(
+              child: ListView.builder(
+                itemCount: features.length,
+                itemBuilder: (context, index) {
+                  final feature = features[index];
+                  final id = feature['id'];
+                  final thumbnailUrl = feature['assets']['thumbnail']['href'];
 
-                return ListTile(
-                  leading: Image.network(thumbnailUrl),
-                  title: Text('ID: $id'),
-                );
-              },
+                  return ListTile(
+                    leading: Image.network(thumbnailUrl),
+                    title: Text('ID: $id'),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
