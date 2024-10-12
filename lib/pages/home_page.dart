@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:frontend/pages/resultado_busca.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -108,8 +109,19 @@ class _HomePageState extends State<HomePage> {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print('Dados recebidos: $data');
-        // Processar os dados conforme necessário
+        final features = data['features'];
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultadoBuscaPage(
+              startDate: startDate,
+              endDate: endDate,
+              startPoint: startPoint,
+              endPoint: endPoint,
+              features: features,
+            ),
+          ),
+        );
       } else {
         print('Erro na solicitação: ${response.statusCode}');
       }
