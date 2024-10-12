@@ -24,53 +24,28 @@ class _HomePageState extends State<HomePage> {
 
   String _currentLayer = 'hybrid';
 
+  DateTime? _startDate;
+  DateTime? _endDate;
   LatLng? _startPoint;
   LatLng? _endPoint;
   bool _isDrawing = false;
 
-  void _zoomIn() {
-    setState(() {
-      _zoomLevel += 2;
-      _mapController.move(
-          _mapController.initialCenter ?? const LatLng(-14.2350, -51.9253),
-          _zoomLevel);
-    });
-  }
-
-  void _zoomOut() {
-    setState(() {
-      _zoomLevel -= 2;
-      _mapController.move(
-          _mapController.initialCenter ?? const LatLng(-14.2350, -51.9253),
-          _zoomLevel);
-    });
-  }
-
-  void _changeLayer(String layer) {
-    setState(() {
-      _currentLayer = layer;
-    });
-  }
-
-  String _getLayerUrl() {
-    switch (_currentLayer) {
-      case 'hybrid':
-        return 'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
-      case 'satellite':
-        return 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
-      case 'streets':
-        return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
-      default:
-        return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+  void _onDateRangeSelected(DateTime? startDate, DateTime? endDate) {
+    if (startDate == null || endDate == null) {
+      print('Data de início ou fim é nula');
+      return;
     }
+    setState(() {
+      _startDate = startDate;
+      _endDate = endDate;
+    });
   }
 
-  void _onDateRangeSelected(DateTime startDate, DateTime endDate) {
-    // Lógica futura para enviar as datas para o backend
-    print('Data Início: $startDate, Data Final: $endDate');
-    if (_startPoint != null && _endPoint != null) {
-      _fetchDataFromINPE(startDate, endDate, _startPoint!, _endPoint!);
-    }
+  bool _isFormValid() {
+    return _startDate != null &&
+        _endDate != null &&
+        _startPoint != null &&
+        _endPoint != null;
   }
 
   void _startDrawing() {
@@ -131,14 +106,34 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onSearchButtonPressed() {
-    if (_startPoint != null && _endPoint != null) {
-      // Para fins de demonstração, usaremos datas fixas
-      DateTime startDate = DateTime(2024, 5, 1);
-      DateTime endDate = DateTime(2024, 5, 15);
-      _fetchDataFromINPE(startDate, endDate, _startPoint!, _endPoint!);
+    if (_isFormValid()) {
+      _fetchDataFromINPE(_startDate!, _endDate!, _startPoint!, _endPoint!);
     } else {
-      print('Selecione uma área no mapa primeiro.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              'Por favor, selecione as datas e uma área no mapa antes de realizar a busca.'),
+        ),
+      );
     }
+  }
+
+  void _zoomIn() {
+    setState(() {
+      _zoomLevel += 2;
+      _mapController.move(
+          _mapController.initialCenter ?? const LatLng(-14.2350, -51.9253),
+          _zoomLevel);
+    });
+  }
+
+  void _zoomOut() {
+    setState(() {
+      _zoomLevel -= 2;
+      _mapController.move(
+          _mapController.initialCenter ?? const LatLng(-14.2350, -51.9253),
+          _zoomLevel);
+    });
   }
 
   @override
@@ -249,7 +244,7 @@ class _HomePageState extends State<HomePage> {
                       color:
                           _isDrawing ? Colors.white : const Color(0xFF176B87),
                       width: 1,
-                    ), // Adiciona a borda de 1px
+                    ),
                   ),
                   child: const Icon(Icons.crop_square),
                 ),
@@ -270,9 +265,7 @@ class _HomePageState extends State<HomePage> {
                   elevation: 5,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(
-                        color: Color(0xFF176B87),
-                        width: 1), // Adiciona a borda de 1px
+                    side: const BorderSide(color: Color(0xFF176B87), width: 1),
                   ),
                   child: const Icon(Icons.zoom_in),
                 ),
@@ -299,13 +292,12 @@ class _HomePageState extends State<HomePage> {
             right: 10,
             bottom: 10,
             child: Container(
-              width: 66, // 56 (tamanho padrão) + 10
-              height: 66, // 56 (tamanho padrão) + 10
+              width: 66,
+              height: 66,
               child: FloatingActionButton(
                 heroTag: 'searchButton',
                 onPressed: _onSearchButtonPressed,
-                mini:
-                    false, // Definir como false para garantir que o tamanho seja aplicado
+                mini: false,
                 foregroundColor: const Color(0xFF176B87),
                 backgroundColor: const Color(0xFFB4D4FF),
                 elevation: 5,
@@ -316,7 +308,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 child: const Icon(
                   Icons.search,
-                  size: 42, 
+                  size: 42,
                   weight: 1000,
                 ),
               ),
@@ -326,8 +318,27 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void _changeLayer(String layer) {
+    setState(() {
+      _currentLayer = layer;
+    });
+  }
+
+  String _getLayerUrl() {
+    switch (_currentLayer) {
+      case 'hybrid':
+        return 'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+      case 'satellite':
+        return 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+      case 'streets':
+        return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+      default:
+        return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$_mapboxToken&language=pt-BR';
+    }
+  }
 }
 
 extension on MapController {
-  get initialCenter => null;
+  LatLng get initialCenter => LatLng(-14.2350, -51.9253);
 }

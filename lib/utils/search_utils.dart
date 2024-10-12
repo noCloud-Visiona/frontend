@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DateRangeSelector extends StatefulWidget {
-  final Function(DateTime, DateTime) onDateRangeSelected;
+  final Function(DateTime?, DateTime?) onDateRangeSelected;
 
   const DateRangeSelector({Key? key, required this.onDateRangeSelected})
       : super(key: key);
@@ -23,13 +23,13 @@ class _DateRangeSelectorState extends State<DateRangeSelector> {
       initialDate: _startDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
-      locale: const Locale('pt', 'BR'), // Define o locale para português do Brasil
+      locale: const Locale('pt', 'BR'),
     );
     if (picked != null && picked != _startDate) {
       setState(() {
         _startDate = picked;
       });
-      widget.onDateRangeSelected(_startDate!, _endDate!);
+      widget.onDateRangeSelected(_startDate, _endDate);
     }
   }
 
@@ -45,7 +45,7 @@ class _DateRangeSelectorState extends State<DateRangeSelector> {
       setState(() {
         _endDate = picked;
       });
-      widget.onDateRangeSelected(_startDate!, _endDate!);
+      widget.onDateRangeSelected(_startDate, _endDate);
     }
   }
 

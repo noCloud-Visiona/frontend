@@ -20,6 +20,20 @@ class ResultadoBuscaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Calcular as coordenadas Norte, Sul, Leste e Oeste
+    final double north = startPoint.latitude > endPoint.latitude
+        ? startPoint.latitude
+        : endPoint.latitude;
+    final double south = startPoint.latitude < endPoint.latitude
+        ? startPoint.latitude
+        : endPoint.latitude;
+    final double west = startPoint.longitude < endPoint.longitude
+        ? startPoint.longitude
+        : endPoint.longitude;
+    final double east = startPoint.longitude > endPoint.longitude
+        ? startPoint.longitude
+        : endPoint.longitude;
+
     return AppTemplate(
       currentIndex: 0,
       body: Scaffold(
@@ -33,16 +47,37 @@ class ResultadoBuscaPage extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 'Data: ${startDate.toIso8601String().split('T').first} - ${endDate.toIso8601String().split('T').first}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const Divider(thickness: 2),
+            const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text(
+                'Coordenadas:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Coordenadas: (${startPoint.latitude}, ${startPoint.longitude}) - (${endPoint.latitude}, ${endPoint.longitude})',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Column(
+                children: [
+                  Text('NORTE: $north', style: const TextStyle(fontSize: 16)),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('OESTE: $west',
+                          style: const TextStyle(fontSize: 16)),
+                      Text('LESTE: $east',
+                          style: const TextStyle(fontSize: 16)),
+                    ],
+                  ),
+                  Text('SUL: $south', style: const TextStyle(fontSize: 16)),
+                ],
               ),
             ),
+            const Divider(thickness: 2),
             Expanded(
               child: ListView.builder(
                 itemCount: features.length,
