@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:frontend/pages/template/app_template.dart';
+import 'package:intl/intl.dart';
 
 class ResultadoBuscaPage extends StatelessWidget {
   final DateTime startDate;
@@ -34,6 +35,17 @@ class ResultadoBuscaPage extends StatelessWidget {
         ? startPoint.longitude
         : endPoint.longitude;
 
+    // Formatar as datas no formato pt-BR
+    final DateFormat dateFormat = DateFormat('dd/MM/yyyy', 'pt_BR');
+    final String formattedStartDate = dateFormat.format(startDate);
+    final String formattedEndDate = dateFormat.format(endDate);
+
+    // Formatar as coordenadas com 4 casas decimais
+    final String formattedNorth = north.toStringAsFixed(4);
+    final String formattedSouth = south.toStringAsFixed(4);
+    final String formattedWest = west.toStringAsFixed(4);
+    final String formattedEast = east.toStringAsFixed(4);
+
     return AppTemplate(
       currentIndex: 0,
       body: Scaffold(
@@ -46,7 +58,7 @@ class ResultadoBuscaPage extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Data: ${startDate.toIso8601String().split('T').first} - ${endDate.toIso8601String().split('T').first}',
+                'Data: $formattedStartDate - $formattedEndDate',
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
@@ -63,17 +75,17 @@ class ResultadoBuscaPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Column(
                 children: [
-                  Text('NORTE: $north', style: const TextStyle(fontSize: 16)),
+                  Text('NORTE: $formattedNorth', style: const TextStyle(fontSize: 16)),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('OESTE: $west',
+                      Text('OESTE: $formattedWest',
                           style: const TextStyle(fontSize: 16)),
-                      Text('LESTE: $east',
+                      Text('LESTE: $formattedEast',
                           style: const TextStyle(fontSize: 16)),
                     ],
                   ),
-                  Text('SUL: $south', style: const TextStyle(fontSize: 16)),
+                  Text('SUL: $formattedSouth', style: const TextStyle(fontSize: 16)),
                 ],
               ),
             ),
