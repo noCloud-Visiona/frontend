@@ -95,11 +95,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _fetchDataFromINPE(DateTime startDate, DateTime endDate, LatLng startPoint, LatLng endPoint) async {
+  Future<void> _fetchDataFromINPE(DateTime startDate, DateTime endDate,
+      LatLng startPoint, LatLng endPoint) async {
     final String startDateString = startDate.toIso8601String().split('T').first;
     final String endDateString = endDate.toIso8601String().split('T').first;
-    final String bbox = '${startPoint.longitude},${startPoint.latitude},${endPoint.longitude},${endPoint.latitude}';
-    final String url = 'https://data.inpe.br/bdc/stac/v1/search?collections=CB4A-WPM-PCA-FUSED-1&datetime=$startDateString/$endDateString&bbox=$bbox';
+    final String bbox =
+        '${startPoint.longitude},${startPoint.latitude},${endPoint.longitude},${endPoint.latitude}';
+    final String url =
+        'https://data.inpe.br/bdc/stac/v1/search?collections=CB4A-WPM-PCA-FUSED-1&datetime=$startDateString/$endDateString&bbox=$bbox';
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -135,7 +138,8 @@ class _HomePageState extends State<HomePage> {
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: const LatLng(-14.2350, -51.9253), // Coordenadas centrais do Brasil
+              initialCenter: const LatLng(
+                  -14.2350, -51.9253), // Coordenadas centrais do Brasil
               initialZoom: _zoomLevel,
               maxZoom: 18.0,
               minZoom: 3.0,
@@ -222,13 +226,16 @@ class _HomePageState extends State<HomePage> {
                   heroTag: 'drawButton',
                   onPressed: _startDrawing,
                   mini: true,
-                  backgroundColor: _isDrawing ? const Color(0xFF176B87) : Colors.white,
-                  foregroundColor: _isDrawing ? Colors.white : const Color(0xFF176B87),
+                  backgroundColor:
+                      _isDrawing ? const Color(0xFF176B87) : Colors.white,
+                  foregroundColor:
+                      _isDrawing ? Colors.white : const Color(0xFF176B87),
                   elevation: 5,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                     side: BorderSide(
-                      color: _isDrawing ? Colors.white : const Color(0xFF176B87),
+                      color:
+                          _isDrawing ? Colors.white : const Color(0xFF176B87),
                       width: 1,
                     ), // Adiciona a borda de 1px
                   ),
@@ -279,20 +286,28 @@ class _HomePageState extends State<HomePage> {
           Positioned(
             right: 10,
             bottom: 10,
-            child: FloatingActionButton(
-              heroTag: 'searchButton',
-              onPressed: _onSearchButtonPressed,
-              mini: true,
-              foregroundColor: Colors.white,
-              backgroundColor: const Color(0xFF176B87),
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(
-                    color: Colors.white,
-                    width: 1), // Adiciona a borda de 1px
+            child: Container(
+              width: 66, // 56 (tamanho padrão) + 10
+              height: 66, // 56 (tamanho padrão) + 10
+              child: FloatingActionButton(
+                heroTag: 'searchButton',
+                onPressed: _onSearchButtonPressed,
+                mini:
+                    false, // Definir como false para garantir que o tamanho seja aplicado
+                foregroundColor: const Color(0xFF176B87),
+                backgroundColor: const Color(0xFFB4D4FF),
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: const BorderSide(
+                      color: Colors.white, width: 1), // Adiciona a borda de 1px
+                ),
+                child: const Icon(
+                  Icons.search,
+                  size: 42, 
+                  weight: 1000,
+                ),
               ),
-              child: const Icon(Icons.search),
             ),
           ),
         ],
