@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/analisar_img_INPE_page.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:frontend/pages/template/app_template.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:frontend/pages/template/app_template.dart'; // Importar o template
 
 class ResultadoBuscaPage extends StatefulWidget {
   final DateTime startDate;
@@ -44,7 +45,8 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
   }
 
   Future<void> fetchFeatures() async {
-    final String startDateStr = startDate?.toIso8601String().split('T').first ?? '';
+    final String startDateStr =
+        startDate?.toIso8601String().split('T').first ?? '';
     final String endDateStr = endDate?.toIso8601String().split('T').first ?? '';
     final double minLat = widget.startPoint.latitude < widget.endPoint.latitude
         ? widget.startPoint.latitude
@@ -52,12 +54,14 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
     final double maxLat = widget.startPoint.latitude > widget.endPoint.latitude
         ? widget.startPoint.latitude
         : widget.endPoint.latitude;
-    final double minLon = widget.startPoint.longitude < widget.endPoint.longitude
-        ? widget.startPoint.longitude
-        : widget.endPoint.longitude;
-    final double maxLon = widget.startPoint.longitude > widget.endPoint.longitude
-        ? widget.startPoint.longitude
-        : widget.endPoint.longitude;
+    final double minLon =
+        widget.startPoint.longitude < widget.endPoint.longitude
+            ? widget.startPoint.longitude
+            : widget.endPoint.longitude;
+    final double maxLon =
+        widget.startPoint.longitude > widget.endPoint.longitude
+            ? widget.startPoint.longitude
+            : widget.endPoint.longitude;
 
     final response = await http.get(Uri.parse(
         'https://data.inpe.br/bdc/stac/v1/search?collections=CB4A-WPM-PCA-FUSED-1&datetime=$startDateStr/$endDateStr&bbox=$minLon,$minLat,$maxLon,$maxLat&limit=$itemsPerPage&page=$currentPage'));
@@ -70,6 +74,17 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
       });
     } else {
       throw Exception('Failed to load features');
+    }
+  }
+
+  Future<Map<String, dynamic>> fetchFeatureById(String id) async {
+    final response = await http.get(Uri.parse(
+        'https://data.inpe.br/bdc/stac/v1/collections/CB4A-WPM-PCA-FUSED-1/items/$id'));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load feature');
     }
   }
 
@@ -107,8 +122,10 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
 
     // Formatar as datas no formato pt-BR
     final DateFormat dateFormat = DateFormat('dd/MM/yyyy', 'pt_BR');
-    final String formattedStartDate = dateFormat.format(startDate ?? widget.startDate);
-    final String formattedEndDate = dateFormat.format(endDate ?? widget.endDate);
+    final String formattedStartDate =
+        dateFormat.format(startDate ?? widget.startDate);
+    final String formattedEndDate =
+        dateFormat.format(endDate ?? widget.endDate);
 
     // Formatar as coordenadas com 4 casas decimais
     final String formattedNorth = north.toStringAsFixed(4);
@@ -126,7 +143,7 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
               const Text('Resultados da Pesquisa'),
               Text(
                 'Total de Imagens: $totalImages',
-                style: TextStyle(fontSize: 14),
+                style: const TextStyle(fontSize: 14),
               ),
             ],
           ),
@@ -154,8 +171,10 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Column(
                 children: [
-                  Text('NORTE: $formattedNorth',
-                      style: const TextStyle(fontSize: 16)),
+                  Center(
+                    child: Text('NORTE: $formattedNorth',
+                        style: const TextStyle(fontSize: 16)),
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -165,8 +184,10 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
                           style: const TextStyle(fontSize: 16)),
                     ],
                   ),
-                  Text('SUL: $formattedSouth',
-                      style: const TextStyle(fontSize: 16)),
+                  Center(
+                    child: Text('SUL: $formattedSouth',
+                        style: const TextStyle(fontSize: 16)),
+                  ),
                 ],
               ),
             ),
@@ -179,11 +200,13 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
                       itemBuilder: (context, index) {
                         final feature = features[index];
                         final id = feature['id'];
-                        final thumbnailUrl = feature['assets']['thumbnail']['href'];
+                        final thumbnailUrl =
+                            feature['assets']['thumbnail']['href'];
                         final datetime = feature['properties']['datetime'];
 
                         // Formatar a data de observação
-                        final DateTime observationDate = DateTime.parse(datetime);
+                        final DateTime observationDate =
+                            DateTime.parse(datetime);
                         final String formattedObservationDate =
                             dateFormat.format(observationDate);
 
@@ -197,7 +220,26 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
                             child: ListTile(
                               leading: Image.network(thumbnailUrl),
                               title: Text('ID: $id'),
-                              subtitle: Text('Data de Observação: $formattedObservationDate'),
+                              subtitle: Text(
+                                  'Data de Observação: $formattedObservationDate'),
+                              onTap: () async {
+                                final featureData = await fetchFeatureById(id);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AnalisarImgINPEpage(
+                                      id: id,
+                                      thumbnailUrl: thumbnailUrl,
+                                      datetime: formattedObservationDate,
+                                      north: north,
+                                      south: south,
+                                      east: east,
+                                      west: west,
+                                      featureData: featureData,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         );
