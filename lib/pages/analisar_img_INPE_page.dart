@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/visualizar_img_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/pages/template/app_template.dart';
@@ -148,6 +149,24 @@ class AnalisarImgINPEpage extends StatelessWidget {
                       _analisarImagem(context);
                     },
                     child: const Text('Analisar'),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VisualizarImagemPage(
+                            featureData: featureData,
+                            north: north,
+                            south: south,
+                            east: east,
+                            west: west,
+                          ),
+                        ),
+                      );
+                    },
+                    child: const Text('Visualizar'),
                   ),
                 ],
               ),
