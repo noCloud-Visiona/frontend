@@ -7,7 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:frontend/pages/template/app_template.dart';
 
-class VisualizarImagemPage extends StatelessWidget {
+class VisualizarImagemPage extends StatefulWidget {
   final Map<String, dynamic> featureData;
   final double north;
   final double south;
@@ -23,29 +23,37 @@ class VisualizarImagemPage extends StatelessWidget {
     required this.west,
   }) : super(key: key);
 
+  @override
+  _VisualizarImagemPageState createState() => _VisualizarImagemPageState();
+}
+
+class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
+  final MapController _mapController = MapController();
+  String _currentLayer = 'hybrid';
+
   Future<void> _analisarImagem(BuildContext context) async {
     try {
       // Criar o JSON com os dados da imagem e as coordenadas do usuário
       var requestData = {
-        "type": featureData["type"],
-        "id": featureData["id"],
-        "collection": featureData["collection"],
-        "stac_version": featureData["stac_version"],
-        "stac_extensions": featureData["stac_extensions"],
-        "geometry": featureData["geometry"],
-        "links": featureData["links"],
-        "bbox": featureData["bbox"],
-        "assets": featureData["assets"],
-        "properties": featureData["properties"],
+        "type": widget.featureData["type"],
+        "id": widget.featureData["id"],
+        "collection": widget.featureData["collection"],
+        "stac_version": widget.featureData["stac_version"],
+        "stac_extensions": widget.featureData["stac_extensions"],
+        "geometry": widget.featureData["geometry"],
+        "links": widget.featureData["links"],
+        "bbox": widget.featureData["bbox"],
+        "assets": widget.featureData["assets"],
+        "properties": widget.featureData["properties"],
         "user_geometry": {
           "type": "Polygon",
           "coordinates": [
             [
-              [west, south],
-              [west, north],
-              [east, north],
-              [east, south],
-              [west, south]
+              [widget.west, widget.south],
+              [widget.west, widget.north],
+              [widget.east, widget.north],
+              [widget.east, widget.south],
+              [widget.west, widget.south]
             ]
           ]
         }
@@ -87,14 +95,33 @@ class VisualizarImagemPage extends StatelessWidget {
     );
   }
 
+  void _changeLayer(String layer) {
+    setState(() {
+      _currentLayer = layer;
+    });
+  }
+
+  String _getLayerUrl() {
+    final String mapboxToken = dotenv.env["MAPBOX_TOKEN"] ?? '';
+    switch (_currentLayer) {
+      case 'hybrid':
+        return 'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken&language=pt-BR';
+      case 'satellite':
+        return 'https://api.mapbox.com/styles/v1/mapbox/satellite-v9/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken&language=pt-BR';
+      case 'streets':
+        return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken&language=pt-BR';
+      default:
+        return 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken&language=pt-BR';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final String mapboxToken = dotenv.env["MAPBOX_TOKEN"] ?? '';
-    final MapController mapController = MapController();
 
     // Extrair dados do JSON
-    final bbox = featureData['bbox'];
-    final thumbnailUrl = featureData['assets']['thumbnail']['href'];
+    final bbox = widget.featureData['bbox'];
+    final thumbnailUrl = widget.featureData['assets']['thumbnail']['href'];
 
     final imageNorth = bbox[3];
     final imageSouth = bbox[1];
@@ -106,7 +133,7 @@ class VisualizarImagemPage extends StatelessWidget {
       body: Stack(
         children: [
           FlutterMap(
-            mapController: mapController,
+            mapController: _mapController,
             options: MapOptions(
               initialCenter: LatLng((imageNorth + imageSouth) / 2, (imageEast + imageWest) / 2),
               initialZoom: 10.0,
@@ -115,7 +142,7 @@ class VisualizarImagemPage extends StatelessWidget {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken&language=pt-BR',
+                urlTemplate: _getLayerUrl(),
                 additionalOptions: {
                   'accessToken': mapboxToken,
                 },
@@ -137,10 +164,10 @@ class VisualizarImagemPage extends StatelessWidget {
                 polygons: [
                   Polygon(
                     points: [
-                      LatLng(south, west),
-                      LatLng(south, east),
-                      LatLng(north, east),
-                      LatLng(north, west),
+                      LatLng(widget.south, widget.west),
+                      LatLng(widget.south, widget.east),
+                      LatLng(widget.north, widget.east),
+                      LatLng(widget.north, widget.west),
                     ],
                     color: Colors.blue.withOpacity(0.3),
                     borderStrokeWidth: 2.0,
@@ -170,9 +197,7 @@ class VisualizarImagemPage extends StatelessWidget {
                   ),
                   child: PopupMenuButton<String>(
                     icon: const Icon(Icons.layers),
-                    onSelected: (layer) {
-                      // Lógica para mudar a camada do mapa
-                    },
+                    onSelected: _changeLayer,
                     itemBuilder: (BuildContext context) {
                       return [
                         const PopupMenuItem(
