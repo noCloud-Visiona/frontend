@@ -1,23 +1,17 @@
-import 'package:flutter/foundation.dart'; // Import para usar kIsWeb
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:frontend/pages/analisar_img_page.dart';
-import 'package:frontend/pages/history_page.dart';
-import 'package:frontend/pages/login_page.dart';
-import 'package:frontend/utils/splash_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // Import necessário
 import 'package:provider/provider.dart';
+import 'package:frontend/pages/login_page.dart';
+import 'package:frontend/pages/analisar_img_page.dart';
 import 'package:frontend/providers/auth_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() async {
   await dotenv.load(fileName: ".env");
-
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -34,7 +28,11 @@ class MyApp extends StatelessWidget {
             titleLarge: TextStyle(color: Colors.white),
           ),
         ),
-        home: _getInitialPage(), // Definir a página inicial dinamicamente
+        home: const LoginPage(),
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        supportedLocales: const [
+          Locale('pt', 'BR'), // Adiciona suporte para português do Brasil
+        ],
         routes: {
           '/analisar': (context) {
             final args = ModalRoute.of(context)!.settings.arguments
@@ -44,20 +42,8 @@ class MyApp extends StatelessWidget {
             );
           },
           '/login': (context) => const LoginPage(),
-          '/lista': (context) => HistoricoPage(),
         },
       ),
     );
-  }
-
-  // Função para decidir qual tela inicial carregar
-  Widget _getInitialPage() {
-    if (kIsWeb) {
-      // Se for uma aplicação web, vai diretamente para a LoginPage
-      return const LoginPage();
-    } else {
-      // Se for um dispositivo móvel, abre a SplashScreen
-      return const LoginPage();
-    }
   }
 }
