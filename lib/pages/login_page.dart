@@ -48,15 +48,16 @@ class _LoginPageState extends State<LoginPage> {
         }),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      //print('Response status: ${response.statusCode}');
+      //print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data.containsKey('token') && data['token'].containsKey('token')) {
           final token = data['token']['token'];
           final decodedToken = JwtDecoder.decode(token);
-          final userId = decodedToken['id'].toString(); // Extraindo userId do token
+          final userId =
+              decodedToken['id'].toString(); // Extraindo userId do token
 
           // Armazenando o token no AuthProvider
           Provider.of<AuthProvider>(context, listen: false).setJwtToken(token);
@@ -74,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         final responseBody = jsonDecode(response.body);
-        _showErrorDialog(responseBody['mensagem'] ??
+        _showErrorDialog(responseBody['error'] ??
             "Falha no login. Verifique suas credenciais.");
       }
     } catch (e) {
@@ -136,11 +137,11 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomNavBar(
-        onBackPressed: () {
-          Navigator.pop(context);
-        },
-        onUserIconPressed: () {},
-      ),
+          onBackPressed: () {
+            Navigator.pop(context);
+          },
+          onUserIconPressed: () {},
+          shouldCheckJwt: false),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -154,6 +155,9 @@ class _LoginPageState extends State<LoginPage> {
               controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(labelText: 'Senha'),
+              onSubmitted: (_) {
+                _login(); // Chama o login ao pressionar Enter
+              },
             ),
             const SizedBox(height: 20),
             ElevatedButton(
