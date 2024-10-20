@@ -44,6 +44,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
         "links": featureData["links"],
         "bbox": featureData["bbox"],
         "assets": featureData["assets"],
+        "thumbnail": featureData["thumbnail"],
         "properties": featureData["properties"],
         "user_geometry": {
           "type": "Polygon",
@@ -59,16 +60,29 @@ class AnalisarImgINPEpage extends StatelessWidget {
         }
       };
 
-      // Imprimir o JSON no terminal
       print('JSON a ser enviado: ${json.encode(requestData)}');
 
-      // Simular um atraso para mostrar o diálogo de carregamento
-      await Future.delayed(const Duration(seconds: 2));
+      // Definir a URL da API
+      var apiUrl = dotenv.env['AI_API_URL'];
+      var uri = Uri.parse('$apiUrl/predict');
 
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('JSON impresso no terminal')),
+      // Fazer o POST com o JSON
+      var response = await http.post(
+        uri,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(requestData),
       );
+
+      // Verificar a resposta
+      if (response.statusCode == 200) {
+        print('Resposta do servidor: ${response.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Imagem analisada com sucesso!')),
+        );
+      } else {
+        throw Exception(
+            'Falha ao analisar imagem. Código: ${response.statusCode}');
+      }
     } catch (e) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -110,17 +124,21 @@ class AnalisarImgINPEpage extends StatelessWidget {
             ),
             const Divider(thickness: 2),
             Center(
-              child: Text('NORTE: ${north.toStringAsFixed(4)}', style: const TextStyle(fontSize: 16)),
+              child: Text('NORTE: ${north.toStringAsFixed(4)}',
+                  style: const TextStyle(fontSize: 16)),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('OESTE: ${west.toStringAsFixed(4)}', style: const TextStyle(fontSize: 16)),
-                Text('LESTE: ${east.toStringAsFixed(4)}', style: const TextStyle(fontSize: 16)),
+                Text('OESTE: ${west.toStringAsFixed(4)}',
+                    style: const TextStyle(fontSize: 16)),
+                Text('LESTE: ${east.toStringAsFixed(4)}',
+                    style: const TextStyle(fontSize: 16)),
               ],
             ),
             Center(
-              child: Text('SUL: ${south.toStringAsFixed(4)}', style: const TextStyle(fontSize: 16)),
+              child: Text('SUL: ${south.toStringAsFixed(4)}',
+                  style: const TextStyle(fontSize: 16)),
             ),
             const Divider(thickness: 2),
             Text('Data: $datetime', style: const TextStyle(fontSize: 16)),

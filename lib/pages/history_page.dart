@@ -32,7 +32,7 @@ class _HistoricoPageState extends State<HistoricoPage> {
 
         if (userId != null) {
           final response = await http.get(
-            Uri.parse('${dotenv.env['AI_API_URL']}/historico/$userId'),
+            Uri.parse('${dotenv.env['FIREBASE_API_URL']}/historico/$userId'),
           );
 
           if (response.statusCode == 200) {
@@ -68,7 +68,8 @@ class _HistoricoPageState extends State<HistoricoPage> {
                 final item = historico[index];
                 return ListTile(
                   leading: Image.network(
-                    Uri.encodeFull(item['thumbnail'] ?? 'https://via.placeholder.com/640'),
+                    Uri.encodeFull(
+                        item['thumbnail'] ?? 'https://via.placeholder.com/640'),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return const Center(
@@ -84,7 +85,8 @@ class _HistoricoPageState extends State<HistoricoPage> {
                     },
                   ),
                   title: Text('Satelite: ${item['satelite']}'),
-                  subtitle: Text('Data: ${item['data']} - Hora: ${item['hora']}'),
+                  subtitle:
+                      Text('Data: ${item['data']} - Hora: ${item['hora']}'),
                   trailing: Text('Área Visível: ${item['area_visivel_mapa']}%'),
                   onTap: () {
                     // Ação ao clicar no item da lista

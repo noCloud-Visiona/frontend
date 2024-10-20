@@ -12,3 +12,5 @@ Executar o Instalador: Baixe e execute o instalador para Windows. Siga as instru
 Adicionar o Google Cloud SDK ao PATH: Durante a instalação, certifique-se de marcar a opção para adicionar o Google Cloud SDK ao PATH. Isso permitirá que você execute o comando gcloud a partir do terminal.
 
 Reiniciar o Terminal: Após a instalação, feche e reabra o terminal para garantir que as mudanças no PATH sejam aplicadas.
+
+-> flutter run -d chrome --web-renderer html

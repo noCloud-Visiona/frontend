@@ -64,7 +64,7 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
             : widget.endPoint.longitude;
 
     final response = await http.get(Uri.parse(
-        'https://data.inpe.br/bdc/stac/v1/search?collections=CB4A-WPM-PCA-FUSED-1&datetime=$startDateStr/$endDateStr&bbox=$minLon,$minLat,$maxLon,$maxLat&limit=$itemsPerPage&page=$currentPage'));
+        'https://data.inpe.br/bdc/stac/v1/search?collections=CBERS4-WFI-16D-2&datetime=$startDateStr/$endDateStr&bbox=$minLon,$minLat,$maxLon,$maxLat&limit=$itemsPerPage&page=$currentPage'));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
@@ -79,7 +79,7 @@ class _ResultadoBuscaPageState extends State<ResultadoBuscaPage> {
 
   Future<Map<String, dynamic>> fetchFeatureById(String id) async {
     final response = await http.get(Uri.parse(
-        'https://data.inpe.br/bdc/stac/v1/collections/CB4A-WPM-PCA-FUSED-1/items/$id'));
+        'https://data.inpe.br/bdc/stac/v1/collections/CBERS4-WFI-16D-2/items/$id'));
 
     if (response.statusCode == 200) {
       return json.decode(response.body);

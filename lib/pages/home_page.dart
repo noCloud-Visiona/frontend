@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
     final String bbox =
         '${startPoint.longitude},${startPoint.latitude},${endPoint.longitude},${endPoint.latitude}';
     final String url =
-        'https://data.inpe.br/bdc/stac/v1/search?collections=CB4A-WPM-PCA-FUSED-1&datetime=$startDateString/$endDateString&bbox=$bbox';
+        'https://data.inpe.br/bdc/stac/v1/search?collections=CBERS4-WFI-16D-2&datetime=$startDateString/$endDateString&bbox=$bbox';
 
     try {
       final response = await http.get(Uri.parse(url));
