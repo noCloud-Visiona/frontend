@@ -74,7 +74,9 @@ class AnalisarImgINPEpage extends StatelessWidget {
       );
 
       // Verificar a resposta
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
+        Navigator.pop(context);
+
         print('Resposta do servidor: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Imagem analisada com sucesso!')),
