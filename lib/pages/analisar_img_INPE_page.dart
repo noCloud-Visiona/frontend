@@ -75,7 +75,13 @@ class AnalisarImgINPEpage extends StatelessWidget {
       );
 
       // Verificar a resposta
+<<<<<<< HEAD
       if (response.statusCode == 200 || response.statusCode == 201) {
+=======
+      if (response.statusCode == 201) {
+        Navigator.pop(context);
+
+>>>>>>> fd9a4b77ccb77021f2eae25bce79c7b59f97db8e
         print('Resposta do servidor: ${response.body}');
         var responseData = json.decode(response.body);
 
