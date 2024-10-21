@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/detalhe_imagem_INPE_page.dart';
 import 'package:frontend/pages/visualizar_img_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -74,8 +75,22 @@ class AnalisarImgINPEpage extends StatelessWidget {
       );
 
       // Verificar a resposta
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         print('Resposta do servidor: ${response.body}');
+        var responseData = json.decode(response.body);
+
+        Navigator.of(context).pop(); // Fechar o diálogo de carregamento
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetalheImgINPEPage(
+              data: responseData,
+              imageBytes: null, // Passe os bytes da imagem se necessário
+            ),
+          ),
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Imagem analisada com sucesso!')),
         );
