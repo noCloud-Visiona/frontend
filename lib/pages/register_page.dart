@@ -177,6 +177,7 @@ class _RegisterPageState extends State<RegisterPage> {
           Navigator.pop(context);
         },
         onUserIconPressed: () {},
+        shouldCheckJwt: false
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
