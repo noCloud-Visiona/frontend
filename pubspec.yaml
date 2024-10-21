@@ -53,7 +53,7 @@ dependencies:
   firebase_storage: ^12.3.2
   pdf: ^3.11.1
   flutter_local_notifications: ^17.2.3
-  open_file: ^3.5.7
+  open_file: ^3.5.9
   universal_html: ^2.2.4
   flutter_map: ^7.0.2
   latlong2: ^0.9.1

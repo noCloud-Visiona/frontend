@@ -196,7 +196,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
                             north: north,
                             south: south,
                             east: east,
-                            west: west,
+                            west: west, id: '', thumbnailUrl: '', datetime: '',
                           ),
                         ),
                       );
