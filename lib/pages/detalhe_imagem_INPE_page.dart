@@ -134,6 +134,13 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
     }
   }
 
+  String _formatCoordinates(Map<String, dynamic> coordinates) {
+    return 'Norte: ${coordinates['coordinate1']['latitude']}\n'
+           'Sul: ${coordinates['coordinate2']['latitude']}\n'
+           'Leste: ${coordinates['coordinate3']['longitude']}\n'
+           'Oeste: ${coordinates['coordinate4']['longitude']}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppTemplate(
@@ -145,33 +152,45 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 10),
-                  if (imageData!['assets'] != null && imageData!['assets']['thumbnail'] != null)
-                    Image.network(
-                      imageData!['assets']['thumbnail']['href'],
-                      width: 300,
-                      height: 300,
-                      fit: BoxFit.cover,
+                  if (imageData!['identificacao_ia'] != null)
+                    Column(
+                      children: [
+                        Text(
+                          '${imageData!['identificacao_ia']['id'] ?? ''}',
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 10),
+                        if (imageData!['identificacao_ia']['img_tratada'] != null)
+                          Image.network(
+                            imageData!['identificacao_ia']['img_tratada'],
+                            width: 300,
+                            height: 300,
+                            fit: BoxFit.cover,
+                          ),
+                      ],
                     ),
                   const SizedBox(height: 20),
+                  const Text(
+                    'Detalhes da Imagem Processada',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
                   CustomTable(
                     data: [
                       {'campo': 'ID', 'valor': imageData!['id'] ?? ''},
                       {'campo': 'Data', 'valor': imageData!['data'] != null ? _formatDate(imageData!['data']) : ''},
                       {'campo': 'Hora', 'valor': imageData!['hora'] ?? ''},
                       {'campo': 'Resolução da Imagem', 'valor': imageData!['identificacao_ia'] != null ? imageData!['identificacao_ia']['resolucao_imagem_png'] ?? '' : ''},
+                      {'campo': 'Coleção', 'valor': imageData!['collection'] ?? ''},
                       {'campo': 'Satélite', 'valor': imageData!['collection'] ?? ''},
                       {'campo': 'Percentual de Nuvem', 'valor': imageData!['identificacao_ia'] != null ? '${imageData!['identificacao_ia']['percentual_nuvem'] ?? ''}%' : ''},
                       {'campo': 'Área Visível no Mapa', 'valor': imageData!['identificacao_ia'] != null ? '${imageData!['identificacao_ia']['area_visivel_mapa'] ?? ''}%' : ''},
+                      {'campo': 'Coordenadas', 'valor': _formatCoordinates(imageData!['user_geometry']['coordinates'])},
+                      {'campo': 'Thumbnail', 'valor': imageData!['assets'] != null && imageData!['assets']['thumbnail'] != null ? imageData!['assets']['thumbnail']['href'] : 'Não se Aplica'},
+                      {'campo': 'Máscara de Nuvem', 'valor': imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['mask_nuvem'] != null ? imageData!['identificacao_ia']['mask_nuvem'] : 'Não se Aplica'},
+                      {'campo': 'Imagem Tiff', 'valor': imageData!['assets'] != null && imageData!['assets']['EVI'] != null ? imageData!['assets']['EVI']['href'] : 'Não se Aplica'},
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  if (imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['mask_nuvem'] != null)
-                    Image.network(
-                      imageData!['identificacao_ia']['mask_nuvem'],
-                      width: 300,
-                      height: 300,
-                      fit: BoxFit.cover,
-                    ),
                   const SizedBox(height: 10),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -184,7 +203,7 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                             print('Botão de download do PDF clicado');
                             _showProgressDialog(context);
                             await generateINPEPdf(context, imageData!);
-                            Navigator.of(context).pop(); // Fechar a barra de progresso
+                            Navigator.of(context).pop();
                           },
                           onDownload: _showDownloadDialog,
                         ),
