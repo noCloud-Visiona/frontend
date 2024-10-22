@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/detalhe_imagem_INPE_page.dart';
@@ -8,7 +7,6 @@ import 'package:frontend/pages/visualizar_img_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/pages/template/app_template.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AnalisarImgINPEpage extends StatelessWidget {
   final String id;
@@ -59,9 +57,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
             ]
           ]
         }
-      };
-
-      print('JSON a ser enviado: ${json.encode(requestData)}');
+      };      
 
       // Definir a URL da API
       var apiUrl = dotenv.env['AI_API_URL'];
