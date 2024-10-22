@@ -32,68 +32,58 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
   }
 
   void _showDownloadDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return CustomDialog(
-              title: 'Selecione as imagens para download',
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isSelectedTratada,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _isSelectedTratada = value ?? false;
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 10),
-                      const Text('Imagem Tratada'),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _isSelectedMascara,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            _isSelectedMascara = value ?? false;
-                          });
-                        },
-                      ),
-                      const SizedBox(width: 10),
-                      const Text('Máscara de Nuvem'),
-                    ],
-                  ),
-                ],
-              ),
-              actions: [
-                ElevatedButton.icon(
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return CustomDialog(
+            title: 'Selecione as Imagens', // Adicionando o título
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _isSelectedTratada,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _isSelectedTratada = value ?? false;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 10),
+                    const Text('Imagem Tratada'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _isSelectedMascara,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _isSelectedMascara = value ?? false;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 10),
+                    const Text('Máscara de Nuvem'),
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              Center( // Centralizando o botão
+                child: ElevatedButton.icon(
                   icon: const Icon(Icons.download),
                   label: const Text('Download'),
                   onPressed: () {
                     Navigator.of(context).pop(); // Fechar o diálogo
-                    if (_isSelectedTratada &&
-                        imageData != null &&
-                        imageData!['identificacao_ia'] != null &&
-                        imageData!['identificacao_ia']['img_tratada'] != null) {
-                      _downloadImage(
-                          imageData!['identificacao_ia']['img_tratada'],
-                          imageData!['identificacao_ia']['id']);
+                    if (_isSelectedTratada && imageData != null && imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['img_tratada'] != null) {
+                      _downloadImage(imageData!['identificacao_ia']['img_tratada'], imageData!['identificacao_ia']['id']);
                     }
-                    if (_isSelectedMascara &&
-                        imageData != null &&
-                        imageData!['identificacao_ia'] != null &&
-                        imageData!['identificacao_ia']['mask_nuvem'] != null) {
-                      _downloadImage(
-                          imageData!['identificacao_ia']['mask_nuvem'],
-                          imageData!['identificacao_ia']['id'],
-                          isCloudMask: true);
+                    if (_isSelectedMascara && imageData != null && imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['mask_nuvem'] != null) {
+                      _downloadImage(imageData!['identificacao_ia']['mask_nuvem'], imageData!['identificacao_ia']['id'], isCloudMask: true);
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -108,13 +98,14 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                     minimumSize: const Size(48, 48),
                   ),
                 ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 
   void _showProgressDialog() {
     showDialog(
