@@ -2,15 +2,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
-import 'package:open_file/open_file.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:universal_html/html.dart' as html; // Para baixar no Web
 
 // Função para baixar imagens tanto no Android quanto no Web
-Future<String?> downloadImgINPE(BuildContext context, String url, String id, {bool isCloudMask = false}) async {
+Future<String?> downloadImgINPE(BuildContext context, String url, String id, {bool isCloudMask = false, String? selectedDirectory}) async {
   try {
-    String? selectedDirectory;
-
     if (kIsWeb) {
       // Web: Criar um link de download e baixar a imagem no navegador
       final response = await http.get(Uri.parse(url));
@@ -28,8 +25,8 @@ Future<String?> downloadImgINPE(BuildContext context, String url, String id, {bo
         throw Exception('Erro ao baixar a imagem: ${response.statusCode}');
       }
     } else {
-      // Android/iOS: Oferecer ao usuário a opção de selecionar o diretório
-      selectedDirectory = await FilePicker.platform.getDirectoryPath();
+      // Android/iOS: Usar o diretório selecionado ou oferecer ao usuário a opção de selecionar o diretório
+      selectedDirectory ??= await FilePicker.platform.getDirectoryPath();
       if (selectedDirectory == null) {
         return null; // Usuário cancelou a seleção
       }

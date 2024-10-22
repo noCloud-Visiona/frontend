@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/custom_img_detail_table.dart';
 import 'package:frontend/pages/template/app_template.dart';
@@ -32,80 +33,104 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
   }
 
   void _showDownloadDialog() {
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
-          return CustomDialog(
-            title: 'Selecione as Imagens', // Adicionando o título
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _isSelectedTratada,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _isSelectedTratada = value ?? false;
-                        });
-                      },
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return CustomDialog(
+              title: 'Selecione as Imagens', // Adicionando o título
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isSelectedTratada,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _isSelectedTratada = value ?? false;
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 10),
+                      const Text('Imagem Tratada'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Checkbox(
+                        value: _isSelectedMascara,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            _isSelectedMascara = value ?? false;
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 10),
+                      const Text('Máscara de Nuvem'),
+                    ],
+                  ),
+                ],
+              ),
+              actions: [
+                Center(
+                  // Centralizando o botão
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.download),
+                    label: const Text('Download'),
+                    onPressed: () async {
+                      Navigator.of(context).pop(); // Fechar o diálogo
+
+                      // Solicitar o diretório uma vez
+                      String? selectedDirectory =
+                          await FilePicker.platform.getDirectoryPath();
+                      if (selectedDirectory == null) {
+                        return; // Usuário cancelou a seleção
+                      }
+
+                      if (_isSelectedTratada &&
+                          imageData != null &&
+                          imageData!['identificacao_ia'] != null &&
+                          imageData!['identificacao_ia']['img_tratada'] !=
+                              null) {
+                        await _downloadImage(
+                            imageData!['identificacao_ia']['img_tratada'],
+                            imageData!['identificacao_ia']['id'],
+                            selectedDirectory: selectedDirectory);
+                      }
+                      if (_isSelectedMascara &&
+                          imageData != null &&
+                          imageData!['identificacao_ia'] != null &&
+                          imageData!['identificacao_ia']['mask_nuvem'] !=
+                              null) {
+                        await _downloadImage(
+                            imageData!['identificacao_ia']['mask_nuvem'],
+                            imageData!['identificacao_ia']['id'],
+                            isCloudMask: true,
+                            selectedDirectory: selectedDirectory);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF176B87),
+                      foregroundColor: Colors.white,
+                      shadowColor: Colors.black,
+                      elevation: 5,
+                      side: const BorderSide(color: Colors.white, width: 1),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      minimumSize: const Size(48, 48),
                     ),
-                    const SizedBox(width: 10),
-                    const Text('Imagem Tratada'),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: _isSelectedMascara,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _isSelectedMascara = value ?? false;
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    const Text('Máscara de Nuvem'),
-                  ],
-                ),
-              ],
-            ),
-            actions: [
-              Center( // Centralizando o botão
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.download),
-                  label: const Text('Download'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Fechar o diálogo
-                    if (_isSelectedTratada && imageData != null && imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['img_tratada'] != null) {
-                      _downloadImage(imageData!['identificacao_ia']['img_tratada'], imageData!['identificacao_ia']['id']);
-                    }
-                    if (_isSelectedMascara && imageData != null && imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['mask_nuvem'] != null) {
-                      _downloadImage(imageData!['identificacao_ia']['mask_nuvem'], imageData!['identificacao_ia']['id'], isCloudMask: true);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF176B87),
-                    foregroundColor: Colors.white,
-                    shadowColor: Colors.black,
-                    elevation: 5,
-                    side: const BorderSide(color: Colors.white, width: 1),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(50),
-                    ),
-                    minimumSize: const Size(48, 48),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   void _showProgressDialog() {
     showDialog(
@@ -175,11 +200,11 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
   }
 
   Future<void> _downloadImage(String url, String id,
-      {bool isCloudMask = false}) async {
+      {bool isCloudMask = false, String? selectedDirectory}) async {
     _showProgressDialog();
     try {
-      final filePath =
-          await downloadImgINPE(context, url, id, isCloudMask: isCloudMask);
+      final filePath = await downloadImgINPE(context, url, id,
+          isCloudMask: isCloudMask, selectedDirectory: selectedDirectory);
       if (context.mounted) {
         Navigator.of(context).pop(); // Fechar o diálogo de progresso
         if (filePath != null) {

@@ -174,7 +174,7 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
             mapController: _mapController,
             options: MapOptions(
               initialCenter: LatLng((imageNorth + imageSouth) / 2, (imageEast + imageWest) / 2),
-              initialZoom: 10.0,
+              initialZoom: 6.0,
               maxZoom: 18.0,
               minZoom: 3.0,
             ),
@@ -195,6 +195,7 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
                       LatLng(imageNorth, imageEast),
                     ),
                     imageProvider: NetworkImage(thumbnailUrl),
+                    opacity: 0.8,
                   ),
                 ],
               ),
