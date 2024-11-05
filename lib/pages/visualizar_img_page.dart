@@ -60,7 +60,7 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
       };
 
       // Imprimir o JSON no terminal
-      print('JSON a ser enviado: ${json.encode(requestData)}');
+      print('JSON a ser enviadoo: ${json.encode(requestData)}');
 
       // Simular um atraso para mostrar o diálogo de carregamento
       await Future.delayed(const Duration(seconds: 2));

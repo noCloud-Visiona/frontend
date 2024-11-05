@@ -63,9 +63,17 @@ class AnalisarImgINPEpage extends StatelessWidget {
 
       print('JSON a ser enviado: ${json.encode(requestData)}');
 
+      // Obter o ID do usuário
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      if (userId == null) {
+        throw Exception('userId não encontrado em SharedPreferences');
+      }
+
       // Definir a URL da API
       var apiUrl = dotenv.env['AI_API_URL'];
-      var uri = Uri.parse('$apiUrl/predict');
+
+      var uri = Uri.parse('$apiUrl/predict/${userId}');
 
       // Fazer o POST com o JSON
       var response = await http.post(
@@ -128,6 +136,12 @@ class AnalisarImgINPEpage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double imageHeight = screenHeight * 0.30;
+
+    double screenWidth = MediaQuery.of(context).size.width;
+    double imageWidth = screenWidth * 0.25;
+
     return AppTemplate(
       currentIndex: 1,
       body: Padding(
@@ -166,8 +180,8 @@ class AnalisarImgINPEpage extends StatelessWidget {
                   if (kIsWeb)
                     Image.network(
                       thumbnailUrl,
-                      width: 300,
-                      height: 300,
+                      width: imageWidth,
+                      height: imageHeight,
                       fit: BoxFit.cover,
                     )
                   else

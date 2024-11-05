@@ -28,7 +28,8 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text('Sessão Expirada'),
-              content: const Text('Sua sessão expirou, por favor, faça login novamente.'),
+              content: const Text(
+                  'Sua sessão expirou, por favor, faça login novamente.'),
               actions: <Widget>[
                 TextButton(
                   child: const Text('OK'),
@@ -36,7 +37,8 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
                     Navigator.of(context).pop();
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()),
                     );
                   },
                 ),
@@ -72,33 +74,44 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
             final token = authProvider.jwtToken;
             String userInitial = '';
 
+            // Verifica se há token e se é válido
             if (token != null && isTokenValid(token)) {
               final tokenPayload = getDecodedToken(token);
               final userName = tokenPayload?['nome'];
               if (userName != null && userName.isNotEmpty) {
                 userInitial = userName[0].toUpperCase();
               }
-            }
 
-            return IconButton(
-              icon: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Text(
-                  userInitial, // Exibe a inicial do nome
-                  style: const TextStyle(color: Color(0xFF176B87)),
+              // Exibe ícone com inicial do nome do usuário
+              return IconButton(
+                icon: CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Text(
+                    userInitial, // Exibe a inicial do nome
+                    style: const TextStyle(color: Color(0xFF176B87)),
+                  ),
                 ),
-              ),
-              onPressed: () {
-                if (token == null || !isTokenValid(token)) {
-                  return; // Não faz nada se não houver token
-                }
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const UserProfilePage()),
-                );
-              },
-            );
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const UserProfilePage()),
+                  );
+                },
+              );
+            } else {
+              // Se não houver token ou for inválido, exibe ícone de usuário
+              return IconButton(
+                icon: const Icon(Icons.person, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const LoginPage()),
+                  );
+                },
+              );
+            }
           },
         ),
       ],
