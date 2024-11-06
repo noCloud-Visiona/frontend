@@ -7,6 +7,7 @@ import 'package:frontend/pages/visualizar_img_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/pages/template/app_template.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AnalisarImgINPEpage extends StatelessWidget {
   final String id;
@@ -57,11 +58,17 @@ class AnalisarImgINPEpage extends StatelessWidget {
             ]
           ]
         }
-      };      
+      };
+
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      if (userId == null) {
+        throw Exception('userId não encontrado em SharedPreferences');
+      }   
 
       // Definir a URL da API
       var apiUrl = dotenv.env['AI_API_URL'];
-      var uri = Uri.parse('$apiUrl/predict');
+      var uri = Uri.parse('$apiUrl/predict/$userId');
 
       // Fazer o POST com o JSON
       var response = await http.post(
@@ -77,6 +84,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
         print('Resposta do servidor: ${response.body}');
         var responseData = json.decode(response.body);
 
+      if (responseData is Map<String, dynamic>) {
         Navigator.of(context).pop(); // Fechar o diálogo de carregamento
 
         Navigator.push(
@@ -93,16 +101,19 @@ class AnalisarImgINPEpage extends StatelessWidget {
           const SnackBar(content: Text('Imagem analisada com sucesso!')),
         );
       } else {
-        throw Exception(
-            'Falha ao analisar imagem. Código: ${response.statusCode}');
+        throw Exception('Formato de resposta inesperado');
       }
-    } catch (e) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e')),
-      );
+    } else {
+      throw Exception(
+          'Falha ao analisar imagem. Código: ${response.statusCode}');
     }
+  } catch (e) {
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erro: $e')),
+    );
   }
+}
 
   void _showLoadingDialog(BuildContext context) {
     showDialog(

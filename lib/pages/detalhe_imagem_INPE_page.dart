@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:frontend/widgets/custom_img_detail_table.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:frontend/widgets/custom_dialog.dart';
-import 'package:frontend/widgets/download_button.dart';
 import 'package:frontend/utils/download_utils_API_INPE.dart'; // Importando o arquivo utilitário
 import 'package:frontend/utils/generate_Pdf_INPE.dart'; // Importando o arquivo de geração de PDF
 import 'package:intl/intl.dart'; // Importando a biblioteca intl
@@ -247,11 +246,12 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
     }
   }
 
-  String _formatCoordinates(Map<String, dynamic> coordinates) {
-    return 'Norte: ${coordinates['coordinate1']['latitude']}\n'
-        'Sul: ${coordinates['coordinate2']['latitude']}\n'
-        'Leste: ${coordinates['coordinate3']['longitude']}\n'
-        'Oeste: ${coordinates['coordinate4']['longitude']}';
+  String _formatCoordinates(List<dynamic> coordinates) {
+    if (coordinates.isEmpty || coordinates[0].isEmpty) {
+      return 'Coordenadas não disponíveis';
+    }
+    final coordList = coordinates[0];
+    return coordList.map((coord) => '(${coord[1]}, ${coord[0]})').join(', ');
   }
 
   @override
@@ -333,8 +333,13 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                           },
                           {
                             'campo': 'Coordenadas',
-                            'valor': _formatCoordinates(
-                                imageData!['user_geometry']['coordinates'])
+                            'valor': imageData!['user_geometry'] != null &&
+                                    imageData!['user_geometry']
+                                            ['coordinates'] !=
+                                        null
+                                ? _formatCoordinates(
+                                    imageData!['user_geometry']['coordinates'])
+                                : 'Não se Aplica'
                           },
                           {
                             'campo': 'Thumbnail',
@@ -371,6 +376,7 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
             child: Column(
               children: [
                 FloatingActionButton(
+                  heroTag: 'uniqueTag1',
                   onPressed: _showDownloadDialog,
                   backgroundColor: const Color(0xFF176B87),
                   foregroundColor: Colors.white, // Ícone na cor branca
@@ -385,6 +391,7 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                 ),
                 const SizedBox(height: 10),
                 FloatingActionButton(
+                  heroTag: 'uniqueTag2',
                   onPressed: _downloadPdf,
                   backgroundColor: const Color(0xFF176B87),
                   foregroundColor: Colors.white, // Ícone na cor branca
