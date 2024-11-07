@@ -137,10 +137,10 @@ class AnalisarImgINPEpage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
-    double imageHeight = screenHeight * 0.30;
+    double imageHeight = screenHeight * 0.40;
 
     double screenWidth = MediaQuery.of(context).size.width;
-    double imageWidth = screenWidth * 0.25;
+    double imageWidth = screenWidth * 0.20;
 
     return AppTemplate(
       currentIndex: 1,

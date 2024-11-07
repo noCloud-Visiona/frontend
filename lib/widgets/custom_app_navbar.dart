@@ -62,10 +62,10 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: onBackPressed,
       ),
-      title: const Center(
-        child: Text(
-          'noCloud',
-          style: TextStyle(color: Colors.white),
+      title: Center(
+        child: Image.asset(
+          "assets/images/noCloud_logo_transparente_1.png",
+          height: 60,
         ),
       ),
       actions: [
@@ -106,8 +106,7 @@ class CustomNavBar extends StatelessWidget implements PreferredSizeWidget {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (context) => const LoginPage()),
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
                   );
                 },
               );
