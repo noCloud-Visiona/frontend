@@ -3,24 +3,33 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:frontend/pages/detalhe_imagem_INPE_page.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:frontend/pages/template/app_template.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VisualizarImagemPage extends StatefulWidget {
-  final Map<String, dynamic> featureData;
+  final String id;
+  final String thumbnailUrl;
+  final String datetime;
   final double north;
   final double south;
   final double east;
   final double west;
+  final Map<String, dynamic> featureData;
 
   const VisualizarImagemPage({
     Key? key,
-    required this.featureData,
+    required this.id,
+    required this.thumbnailUrl,
+    required this.datetime,
     required this.north,
     required this.south,
     required this.east,
     required this.west,
+    required this.featureData,
   }) : super(key: key);
 
   @override
@@ -44,6 +53,7 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
         "links": widget.featureData["links"],
         "bbox": widget.featureData["bbox"],
         "assets": widget.featureData["assets"],
+        "thumbnail": widget.featureData["thumbnail"],
         "properties": widget.featureData["properties"],
         "user_geometry": {
           "type": "Polygon",
@@ -62,13 +72,50 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
       // Imprimir o JSON no terminal
       print('JSON a ser enviadoo: ${json.encode(requestData)}');
 
-      // Simular um atraso para mostrar o diálogo de carregamento
-      await Future.delayed(const Duration(seconds: 2));
+      // Definir a URL da API
+      var apiUrl = dotenv.env['AI_API_URL'];
+      
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      if (userId == null) {
+        throw Exception('userId não encontrado em SharedPreferences');
+      }
 
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('JSON impresso no terminal')),
+      var uri = Uri.parse('$apiUrl/predict/$userId'); // Usando a variável de ambiente AI_API_URL
+
+      // Fazer o POST com o JSON
+      var response = await http.post(
+        uri,
+        headers: {"Content-Type": "application/json"},
+        body: json.encode(requestData),
       );
+
+      // Verificar a resposta
+      if (response.statusCode == 201) {
+        Navigator.pop(context);
+
+        print('Resposta do servidor: ${response.body}');
+        var responseData = json.decode(response.body);
+
+        Navigator.of(context).pop(); // Fechar o diálogo de carregamento
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetalheImgINPEPage(
+              data: responseData,
+              imageBytes: null, // Passe os bytes da imagem se necessário
+            ),
+          ),
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Imagem analisada com sucesso!')),
+        );
+      } else {
+        throw Exception(
+            'Falha ao analisar imagem. Código: ${response.statusCode}');
+      }
     } catch (e) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -136,7 +183,7 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
             mapController: _mapController,
             options: MapOptions(
               initialCenter: LatLng((imageNorth + imageSouth) / 2, (imageEast + imageWest) / 2),
-              initialZoom: 10.0,
+              initialZoom: 6.0,
               maxZoom: 18.0,
               minZoom: 3.0,
             ),
@@ -157,6 +204,7 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
                       LatLng(imageNorth, imageEast),
                     ),
                     imageProvider: NetworkImage(thumbnailUrl),
+                    opacity: 0.8,
                   ),
                 ],
               ),

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/detalhe_imagem_INPE_page.dart';
@@ -61,8 +60,6 @@ class AnalisarImgINPEpage extends StatelessWidget {
         }
       };
 
-      print('JSON a ser enviado: ${json.encode(requestData)}');
-
       // Obter o ID do usuário
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString('userId');
@@ -89,6 +86,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
         print('Resposta do servidor: ${response.body}');
         var responseData = json.decode(response.body);
 
+      if (responseData is Map<String, dynamic>) {
         Navigator.of(context).pop(); // Fechar o diálogo de carregamento
 
         Navigator.push(
@@ -105,16 +103,19 @@ class AnalisarImgINPEpage extends StatelessWidget {
           const SnackBar(content: Text('Imagem analisada com sucesso!')),
         );
       } else {
-        throw Exception(
-            'Falha ao analisar imagem. Código: ${response.statusCode}');
+        throw Exception('Formato de resposta inesperado');
       }
-    } catch (e) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro: $e')),
-      );
+    } else {
+      throw Exception(
+          'Falha ao analisar imagem. Código: ${response.statusCode}');
     }
+  } catch (e) {
+    Navigator.pop(context);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erro: $e')),
+    );
   }
+}
 
   void _showLoadingDialog(BuildContext context) {
     showDialog(
@@ -210,7 +211,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
                             north: north,
                             south: south,
                             east: east,
-                            west: west,
+                            west: west, id: '', thumbnailUrl: '', datetime: '',
                           ),
                         ),
                       );

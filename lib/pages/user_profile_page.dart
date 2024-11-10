@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/pages/list_user_page.dart';
+import 'package:frontend/pages/template/app_template.dart';
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
@@ -97,7 +98,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
         if (response.statusCode == 200) {
           _showCustomDialog("Informações do usuário atualizadas com sucesso!");
         } else {
-          _showCustomDialog("Erro ao atualizar as informações: ${response.body}");
+          _showCustomDialog(
+              "Erro ao atualizar as informações: ${response.body}");
         }
       }
     } catch (e) {
@@ -144,58 +146,69 @@ class _UserProfilePageState extends State<UserProfilePage> {
       );
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Minha Conta')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+    return AppTemplate(
+      currentIndex: 1,
+      /* Scaffold(
+      appBar: AppBar(title: const Text('Minha Conta')), */
+      body: Scaffold(
+        appBar: AppBar(
+            title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nome'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration:
-                  const InputDecoration(labelText: 'Nova Senha (opcional)'),
-              obscureText: true,
-            ),
-            TextField(
-              controller: _confirmPasswordController,
-              decoration:
-                  const InputDecoration(labelText: 'Confirme a Nova Senha'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _updateUserInfo,
-              child: const Text('Atualizar'),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _logout,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Logout'),
-            ),
+            Text('Minha Conta'),
           ],
+        )),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: 'Nome'),
+              ),
+              TextField(
+                controller: _passwordController,
+                decoration:
+                    const InputDecoration(labelText: 'Nova Senha (opcional)'),
+                obscureText: true,
+              ),
+              TextField(
+                controller: _confirmPasswordController,
+                decoration:
+                    const InputDecoration(labelText: 'Confirme a Nova Senha'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _updateUserInfo,
+                child: const Text('Atualizar'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _logout,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Logout'),
+              ),
+            ],
+          ),
         ),
+        floatingActionButton: _isAdmin
+            ? FloatingActionButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ListUsersPage(),
+                    ),
+                  );
+                },
+                child: const Icon(Icons.list),
+                tooltip: 'Listar Todos Usuários',
+              )
+            : null,
       ),
-      floatingActionButton: _isAdmin
-          ? FloatingActionButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ListUsersPage(),
-                  ),
-                );
-              },
-              child: const Icon(Icons.list),
-              tooltip: 'Listar Todos Usuários',
-            )
-          : null,
     );
   }
 }

@@ -23,28 +23,34 @@ class CustomDialog extends StatelessWidget {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 5),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Image.asset(
+                'assets/images/noCloud_logo_transparente_1.png',
+                height: 50,
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Color(0xFF176B87)),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: const TextStyle(
+              color: Color(0xFF176B87),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 10),
           content,
         ],
       ),
       actions: actions,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Image.asset(
-            'assets/images/noCloud_logo_transparente_1.png',
-            height: 120,
-            width: 100,
-          ),
-          const SizedBox(width: 10),
-          IconButton(
-            icon: const Icon(Icons.close, color: Color(0xFF176B87)),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      ),
     );
   }
 }
