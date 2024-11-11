@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VisualizarImagemPage extends StatefulWidget {
   final String id;
@@ -68,11 +69,19 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
         }
       };
 
-      print('JSON a ser enviado: ${json.encode(requestData)}');
+      // Imprimir o JSON no terminal
+      print('JSON a ser enviadoo: ${json.encode(requestData)}');
 
       // Definir a URL da API
       var apiUrl = dotenv.env['AI_API_URL'];
-      var uri = Uri.parse('$apiUrl/predict');
+      
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      if (userId == null) {
+        throw Exception('userId não encontrado em SharedPreferences');
+      }
+
+      var uri = Uri.parse('$apiUrl/predict/$userId'); // Usando a variável de ambiente AI_API_URL
 
       // Fazer o POST com o JSON
       var response = await http.post(

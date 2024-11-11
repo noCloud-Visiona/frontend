@@ -43,6 +43,7 @@ class _HistoricoPageState extends State<HistoricoPage> {
       if (token != null) {
         final decodedToken = getDecodedToken(token);
         final userId = decodedToken?['id'];
+        print('userId: $userId');
 
         if (userId != null) {
           final response = await http.get(
@@ -76,6 +77,8 @@ class _HistoricoPageState extends State<HistoricoPage> {
       return;
     }
 
+    print('imageId = $imageId');
+
     try {
       final token = await _fetchJWT();
       if (token != null) {
@@ -84,12 +87,13 @@ class _HistoricoPageState extends State<HistoricoPage> {
 
         if (userId != null) {
           final response = await http.delete(
-            Uri.parse('${dotenv.env['AI_API_URL']}/delete_image/$imageId/$userId'),
+            Uri.parse(
+                '${dotenv.env['FIREBASE_API_URL']}/delete_image/$imageId/$userId'),
           );
 
           if (response.statusCode == 200) {
             setState(() {
-              historico.removeWhere((item) => item['id_imagem'] == imageId);
+              historico.removeWhere((item) => item['id'] == imageId);
             });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Imagem deletada com sucesso!')),
@@ -109,7 +113,7 @@ class _HistoricoPageState extends State<HistoricoPage> {
     }
   }
 
-  void  _confirmDelete(String? imageId) {
+  void _confirmDelete(String? imageId) {
     if (imageId == null) {
       return;
     }
@@ -149,16 +153,19 @@ class _HistoricoPageState extends State<HistoricoPage> {
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : historico.isEmpty
-              ? Center(child: Text('Sem histórico de imagem disponível no momento.'))
+              ? Center(
+                  child: Text('Sem histórico de imagem disponível no momento.'))
               : ListView.builder(
                   itemCount: historico.length,
                   itemBuilder: (context, index) {
                     final item = historico[index];
-                    final imageId = item['id_imagem'] as String?;
+                    print('Item: $item');
+                    final imageId = item['id'] as String?;
 
                     return ListTile(
                       leading: Image.network(
-                        Uri.encodeFull(item['thumbnail'] ?? 'https://via.placeholder.com/640'),
+                        Uri.encodeFull(item['assets']['thumbnail']['href'] ??
+                            'https://via.placeholder.com/640'),
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return const Center(
@@ -173,12 +180,14 @@ class _HistoricoPageState extends State<HistoricoPage> {
                           );
                         },
                       ),
-                      title: Text('Satelite: ${item['satelite']}'),
-                      subtitle: Text('Data: ${item['data']} - Hora: ${item['hora']}'),
+                      title: Text('Satelite: ${item['collection']}'),
+                      subtitle:
+                          Text('Data: ${item['data']} - Hora: ${item['hora']}'),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('Área Visível: ${item['area_visivel_mapa']}%'),
+                          Text(
+                              'Área Visível: ${item['identificacao_ia']['area_visivel_mapa']}%'),
                           IconButton(
                             icon: Icon(Icons.delete, color: Colors.red),
                             onPressed: () {
