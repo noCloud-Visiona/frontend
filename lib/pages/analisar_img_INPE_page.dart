@@ -69,7 +69,6 @@ class AnalisarImgINPEpage extends StatelessWidget {
 
       // Definir a URL da API
       var apiUrl = dotenv.env['AI_API_URL'];
-
       var uri = Uri.parse('$apiUrl/predict/${userId}');
 
       // Fazer o POST com o JSON
@@ -80,42 +79,21 @@ class AnalisarImgINPEpage extends StatelessWidget {
       );
 
       // Verificar a resposta
-      if (response.statusCode == 201) {
-        Navigator.pop(context);
+      if (response.statusCode == 202) {
+        Navigator.pop(context); // Fecha o diálogo de carregamento
 
-        print('Resposta do servidor: ${response.body}');
-        var responseData = json.decode(response.body);
-
-      if (responseData is Map<String, dynamic>) {
-        Navigator.of(context).pop(); // Fechar o diálogo de carregamento
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DetalheImgINPEPage(
-              data: responseData,
-              imageBytes: null, // Passe os bytes da imagem se necessário
-            ),
-          ),
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Imagem analisada com sucesso!')),
-        );
+        // Exibe o popup com a mensagem de que a análise está em andamento
+        _showAnalysisInProgressDialog(context);
       } else {
-        throw Exception('Formato de resposta inesperado');
+        throw Exception('Falha ao analisar imagem. Código: ${response.statusCode}');
       }
-    } else {
-      throw Exception(
-          'Falha ao analisar imagem. Código: ${response.statusCode}');
+    } catch (e) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: $e')),
+      );
     }
-  } catch (e) {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erro: $e')),
-    );
   }
-}
 
   void _showLoadingDialog(BuildContext context) {
     showDialog(
@@ -130,6 +108,27 @@ class AnalisarImgINPEpage extends StatelessWidget {
               Text('Processando imagem...'),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showAnalysisInProgressDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Análise em andamento'),
+          content: const Text(
+              'A análise está em andamento!\nVerifique a análise no seu histórico em aproximadamente 10 minutos.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+              child: const Text('OK'),
+            ),
+          ],
         );
       },
     );
