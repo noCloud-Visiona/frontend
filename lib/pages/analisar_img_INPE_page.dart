@@ -81,9 +81,16 @@ class AnalisarImgINPEpage extends StatelessWidget {
       // Verificar a resposta
       if (response.statusCode == 202) {
         Navigator.pop(context); // Fecha o diálogo de carregamento
+        print(response);
+
+        // Converte o corpo da resposta para um mapa
+        var responseBody = json.decode(response.body); // Decodifica o corpo da resposta em um Map
+
+        // Agora você pode acessar job_id dentro do mapa decodificado
+        var jobId = responseBody['job_id']; // Acessa o job_id do mapa decodificado
 
         // Exibe o popup com a mensagem de que a análise está em andamento
-        _showAnalysisInProgressDialog(context);
+        _showAnalysisInProgressDialog(context, jobId);
       } else {
         throw Exception('Falha ao analisar imagem. Código: ${response.statusCode}');
       }
@@ -113,15 +120,41 @@ class AnalisarImgINPEpage extends StatelessWidget {
     );
   }
 
-  void _showAnalysisInProgressDialog(BuildContext context) {
+  void _showAnalysisInProgressDialog(BuildContext context, String jobId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Análise em andamento'),
           content: const Text(
-              'A análise está em andamento!\nVerifique a análise no seu histórico em aproximadamente 10 minutos.'),
+              'A análise está em andamento!\nVerifique a análise no seu histórico em aproximadamente 10 minutos.\nOu espere e clique em "Verificar análise".'),
           actions: [
+            TextButton(
+              onPressed: () async {
+                // Verificar o status da análise
+                var statusResponse = await _verificarStatusAnalise(context, jobId);
+
+                if (statusResponse != null && statusResponse['result'] != null) {
+                  Navigator.of(context).pop(); // Fecha o diálogo de análise em andamento
+
+                  // Navegar para a página de detalhes da imagem
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetalheImgINPEPage(
+                        data: statusResponse['result'],
+                        imageBytes: statusResponse['image_bytes'], // Ajuste conforme necessário
+                      ),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('A análise ainda não foi concluída. Tente novamente mais tarde.')),
+                  );
+                }
+              },
+              child: const Text('Verificar análise'),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Fecha o diálogo
@@ -132,6 +165,29 @@ class AnalisarImgINPEpage extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<Map<String, dynamic>?> _verificarStatusAnalise(
+      BuildContext context, String jobId) async {
+    try {
+      // Fazer o GET para verificar o status da análise
+      var apiUrl = dotenv.env['AI_API_URL'];
+      var uri = Uri.parse('$apiUrl/status/$jobId');
+
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(response.body);
+        return jsonResponse;
+      } else {
+        throw Exception('Falha ao verificar o status da análise. Código: ${response.statusCode}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao verificar status: $e')),
+      );
+      return null;
+    }
   }
 
   @override
@@ -210,7 +266,10 @@ class AnalisarImgINPEpage extends StatelessWidget {
                             north: north,
                             south: south,
                             east: east,
-                            west: west, id: '', thumbnailUrl: '', datetime: '',
+                            west: west,
+                            id: '',
+                            thumbnailUrl: '',
+                            datetime: '',
                           ),
                         ),
                       );
