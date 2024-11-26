@@ -5,6 +5,7 @@ import 'package:frontend/utils/jwt_utils.dart';
 import 'package:frontend/providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:frontend/pages/detalhe_imagem_INPE_page.dart'; // Importar a página de detalhes INPE
 
 class HistoricoPage extends StatefulWidget {
   @override
@@ -144,6 +145,48 @@ class _HistoricoPageState extends State<HistoricoPage> {
     );
   }
 
+  // Função para buscar o status de um job_id
+  Future<void> _fetchStatus(String jobId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${dotenv.env['AI_API_URL']}/status/$jobId'),
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = json.decode(response.body);
+        print('Status do job: $responseData');
+
+        // Navegar para a página de detalhes
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetalheImgINPEPage(
+              data: responseData,
+              imageBytes: null, // Passe os bytes da imagem se necessário
+            ),
+          ),
+        );
+
+        // Comentado: Navegar para outra página de detalhes, caso necessário
+        /*
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetalheImgPage(
+              data: responseData,
+              imageBytes: null,
+            ),
+          ),
+        );
+        */
+      } else {
+        throw Exception('Falha ao obter status do job.');
+      }
+    } catch (error) {
+      print('Erro ao obter status do job: $error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,6 +204,7 @@ class _HistoricoPageState extends State<HistoricoPage> {
                     final item = historico[index];
                     print('Item: $item');
                     final imageId = item['id'] as String?;
+                    final jobId = item['identificacao_ia']['job_id'] as String?;
 
                     return ListTile(
                       leading: Image.network(
@@ -197,7 +241,11 @@ class _HistoricoPageState extends State<HistoricoPage> {
                         ],
                       ),
                       onTap: () {
-                        // Ação ao clicar no item da lista
+                        if (jobId != null) {
+                          _fetchStatus(jobId); // Buscar status e redirecionar
+                        } else {
+                          print('Job ID não encontrado.');
+                        }
                       },
                     );
                   },

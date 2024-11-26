@@ -69,7 +69,6 @@ class AnalisarImgINPEpage extends StatelessWidget {
 
       // Definir a URL da API
       var apiUrl = dotenv.env['AI_API_URL'];
-
       var uri = Uri.parse('$apiUrl/predict/${userId}');
 
       // Fazer o POST com o JSON
@@ -80,42 +79,28 @@ class AnalisarImgINPEpage extends StatelessWidget {
       );
 
       // Verificar a resposta
-      if (response.statusCode == 201) {
-        Navigator.pop(context);
+      if (response.statusCode == 202) {
+        Navigator.pop(context); // Fecha o diálogo de carregamento
+        print(response);
 
-        print('Resposta do servidor: ${response.body}');
-        var responseData = json.decode(response.body);
+        // Converte o corpo da resposta para um mapa
+        var responseBody = json.decode(response.body); // Decodifica o corpo da resposta em um Map
 
-      if (responseData is Map<String, dynamic>) {
-        Navigator.of(context).pop(); // Fechar o diálogo de carregamento
+        // Agora você pode acessar job_id dentro do mapa decodificado
+        var jobId = responseBody['job_id']; // Acessa o job_id do mapa decodificado
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DetalheImgINPEPage(
-              data: responseData,
-              imageBytes: null, // Passe os bytes da imagem se necessário
-            ),
-          ),
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Imagem analisada com sucesso!')),
-        );
+        // Exibe o popup com a mensagem de que a análise está em andamento
+        _showAnalysisInProgressDialog(context, jobId);
       } else {
-        throw Exception('Formato de resposta inesperado');
+        throw Exception('Falha ao analisar imagem. Código: ${response.statusCode}');
       }
-    } else {
-      throw Exception(
-          'Falha ao analisar imagem. Código: ${response.statusCode}');
+    } catch (e) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: $e')),
+      );
     }
-  } catch (e) {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Erro: $e')),
-    );
   }
-}
 
   void _showLoadingDialog(BuildContext context) {
     showDialog(
@@ -133,6 +118,76 @@ class AnalisarImgINPEpage extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _showAnalysisInProgressDialog(BuildContext context, String jobId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Análise em andamento'),
+          content: const Text(
+              'A análise está em andamento!\nVerifique a análise no seu histórico em aproximadamente 10 minutos.\nOu espere e clique em "Verificar análise".'),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                // Verificar o status da análise
+                var statusResponse = await _verificarStatusAnalise(context, jobId);
+
+                if (statusResponse != null && statusResponse['result'] != null) {
+                  Navigator.of(context).pop(); // Fecha o diálogo de análise em andamento
+
+                  // Navegar para a página de detalhes da imagem
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetalheImgINPEPage(
+                        data: statusResponse['result'],
+                        imageBytes: statusResponse['image_bytes'], // Ajuste conforme necessário
+                      ),
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('A análise ainda não foi concluída. Tente novamente mais tarde.')),
+                  );
+                }
+              },
+              child: const Text('Verificar análise'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<Map<String, dynamic>?> _verificarStatusAnalise(
+      BuildContext context, String jobId) async {
+    try {
+      // Fazer o GET para verificar o status da análise
+      var apiUrl = dotenv.env['AI_API_URL'];
+      var uri = Uri.parse('$apiUrl/status/$jobId');
+
+      var response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(response.body);
+        return jsonResponse;
+      } else {
+        throw Exception('Falha ao verificar o status da análise. Código: ${response.statusCode}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao verificar status: $e')),
+      );
+      return null;
+    }
   }
 
   @override
@@ -211,7 +266,10 @@ class AnalisarImgINPEpage extends StatelessWidget {
                             north: north,
                             south: south,
                             east: east,
-                            west: west, id: '', thumbnailUrl: '', datetime: '',
+                            west: west,
+                            id: '',
+                            thumbnailUrl: '',
+                            datetime: '',
                           ),
                         ),
                       );

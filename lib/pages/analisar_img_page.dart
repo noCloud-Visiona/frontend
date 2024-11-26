@@ -49,7 +49,13 @@ class AnalisarImgPage extends StatelessWidget {
       print('Enviando imagem para análise...'); // Log para depuração
 
       var streamedResponse = await request.send().timeout(const Duration(seconds: 60));
-      if (streamedResponse.statusCode == 200) {
+      if (streamedResponse.statusCode == 202) {
+        print('Análise em andamento. Aguardando resposta...'); // Log para depuração
+
+        // Exibir o popup de "Análise em andamento"
+        _showAnalysisInProgressDialog(context);
+        
+      } else if (streamedResponse.statusCode == 200) {
         print('Imagem enviada com sucesso, recebendo resposta...'); // Log para depuração
         var responseData = await streamedResponse.stream.toBytes().timeout(const Duration(seconds: 60));
         print('Resposta recebida, decodificando...'); // Log para depuração
@@ -111,6 +117,28 @@ class AnalisarImgPage extends StatelessWidget {
               Text('Processando imagem...'),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  void _showAnalysisInProgressDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Análise em andamento'),
+          content: const Text(
+            'A análise está em andamento!\nVerifique no seu histórico em aproximadamente 10 minutos.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+              child: const Text('OK'),
+            ),
+          ],
         );
       },
     );

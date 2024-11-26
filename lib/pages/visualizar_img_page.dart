@@ -70,18 +70,19 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
       };
 
       // Imprimir o JSON no terminal
-      print('JSON a ser enviadoo: ${json.encode(requestData)}');
+      print('JSON a ser enviado: ${json.encode(requestData)}');
 
       // Definir a URL da API
       var apiUrl = dotenv.env['AI_API_URL'];
-      
+
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString('userId');
       if (userId == null) {
         throw Exception('userId não encontrado em SharedPreferences');
       }
 
-      var uri = Uri.parse('$apiUrl/predict/$userId'); // Usando a variável de ambiente AI_API_URL
+      var uri = Uri.parse(
+          '$apiUrl/predict/$userId'); // Usando a variável de ambiente AI_API_URL
 
       // Fazer o POST com o JSON
       var response = await http.post(
@@ -91,13 +92,15 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
       );
 
       // Verificar a resposta
-      if (response.statusCode == 201) {
-        Navigator.pop(context);
+      if (response.statusCode == 202) {
+        // Se a resposta for 202, mostra o diálogo
+        Navigator.pop(context); // Fecha o diálogo de carregamento
+        _showStatusDialog(context); // Chama o método para exibir o popup
+      } else if (response.statusCode == 201) {
+        Navigator.pop(context); // Fecha o diálogo de carregamento
 
         print('Resposta do servidor: ${response.body}');
         var responseData = json.decode(response.body);
-
-        Navigator.of(context).pop(); // Fechar o diálogo de carregamento
 
         Navigator.push(
           context,
@@ -122,6 +125,29 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
         SnackBar(content: Text('Erro: $e')),
       );
     }
+  }
+
+  void _showStatusDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Análise em Andamento'),
+          content: Text(
+            'A análise está em andamento!\nVerifique a análise no seu histórico em aproximadamente 10 minutos.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Fecha o diálogo
+              },
+              child: Text('Fechar'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showLoadingDialog(BuildContext context) {
@@ -182,7 +208,8 @@ class _VisualizarImagemPageState extends State<VisualizarImagemPage> {
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: LatLng((imageNorth + imageSouth) / 2, (imageEast + imageWest) / 2),
+              initialCenter: LatLng(
+                  (imageNorth + imageSouth) / 2, (imageEast + imageWest) / 2),
               initialZoom: 6.0,
               maxZoom: 18.0,
               minZoom: 3.0,

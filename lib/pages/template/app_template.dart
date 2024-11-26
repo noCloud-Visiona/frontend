@@ -79,7 +79,7 @@ class AppTemplate extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list, color: Colors.white),
-            label: 'Lista',
+            label: 'Análises',
           ),
         ],
       ),
