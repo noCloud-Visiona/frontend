@@ -1,15 +1,14 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend/pages/visualizar_mapa_thumb_page.dart';
 import 'package:frontend/widgets/custom_img_detail_table.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:frontend/widgets/custom_dialog.dart';
 import 'package:frontend/utils/download_utils_API_INPE.dart'; // Importando o arquivo utilitário
 import 'package:frontend/utils/generate_Pdf_INPE.dart'; // Importando o arquivo de geração de PDF
 import 'package:intl/intl.dart'; // Importando a biblioteca intl
-import 'package:open_file/open_file.dart';
-
-import 'visualizar_mapa_thumb_page.dart'; // Importando a biblioteca open_file
+import 'package:open_file/open_file.dart'; // Importando a biblioteca open_file
 
 class DetalheImgINPEPage extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -90,9 +89,9 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                       if (_isSelectedTratada &&
                           imageData != null &&
                           imageData!['identificacao_ia'] != null &&
-                          imageData!['identificacao_ia']['thumbnail_imagem_url'] != null) {
+                          imageData!['identificacao_ia']['img_tratada'] != null) {
                         await _downloadImage(
-                            imageData!['identificacao_ia']['thumbnail_imagem_url'],
+                            imageData!['identificacao_ia']['img_tratada'],
                             imageData!['identificacao_ia']['id'],
                             selectedDirectory: selectedDirectory);
                       }
@@ -243,16 +242,14 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
     }
   }
 
-  String _formatCoordinates(List<dynamic> coordinates) {
-    if (coordinates.isEmpty || coordinates[0].isEmpty) {
-      return 'Coordenadas não disponíveis';
-    }
-    final coordList = coordinates[0];
-    return coordList.map((coord) => '(${coord[1]}, ${coord[0]})').join(', ');
-  }
-
   @override
   Widget build(BuildContext context) {
+    final bbox = imageData!['bbox'];
+    final norte = bbox[3];
+    final sul = bbox[1];
+    final leste = bbox[2];
+    final oeste = bbox[0];
+
     return AppTemplate(
       currentIndex: 1,
       body: Stack(
@@ -299,7 +296,9 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                                 ? _formatDate(imageData!['identificacao_ia']['data'])
                                 : ''
                           },
-                          {'campo': 'Hora', 'valor': imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['hora'] != null
+                          {
+                            'campo': 'Hora',
+                            'valor': imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['hora'] != null
                                 ? imageData!['identificacao_ia']['hora']
                                 : ''
                           },
@@ -333,13 +332,7 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                           },
                           {
                             'campo': 'Coordenadas',
-                            'valor': imageData!['user_geometry'] != null &&
-                                    imageData!['user_geometry']
-                                            ['coordinates'] !=
-                                        null
-                                ? _formatCoordinates(
-                                    imageData!['user_geometry']['coordinates'])
-                                : 'Não se Aplica'
+                            'valor': 'Norte: $norte\nSul: $sul\nLeste: $leste\nOeste: $oeste'
                           },
                           {
                             'campo': 'Thumbnail',
@@ -506,7 +499,7 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => VisualizarMapaThumb (
+                    builder: (context) => VisualizarMapaThumb(
                       featureData: imageData!,
                     ),
                   ),
