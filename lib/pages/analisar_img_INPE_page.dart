@@ -167,28 +167,31 @@ class AnalisarImgINPEpage extends StatelessWidget {
     );
   }
 
-  Future<Map<String, dynamic>?> _verificarStatusAnalise(
-      BuildContext context, String jobId) async {
-    try {
-      // Fazer o GET para verificar o status da análise
-      var apiUrl = dotenv.env['AI_API_URL'];
-      var uri = Uri.parse('$apiUrl/status/$jobId');
+  Future<Map<String, dynamic>?> _verificarStatusAnalise(BuildContext context, String jobId) async {
+  try {
+    // Fazer o GET para verificar o status da análise
+    var apiUrl = dotenv.env['AI_API_URL'];
+    var uri = Uri.parse('$apiUrl/status/$jobId');
 
-      var response = await http.get(uri);
+    var response = await http.get(uri);
 
-      if (response.statusCode == 200) {
-        var jsonResponse = json.decode(response.body);
+    if (response.statusCode == 200) {
+      var jsonResponse = json.decode(response.body);
+      if (jsonResponse is Map<String, dynamic>) {
         return jsonResponse;
       } else {
-        throw Exception('Falha ao verificar o status da análise. Código: ${response.statusCode}');
+        throw Exception('Formato de resposta inesperado');
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao verificar status: $e')),
-      );
-      return null;
+    } else {
+      throw Exception('Falha ao verificar o status da análise. Código: ${response.statusCode}');
     }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Erro ao verificar status: $e')),
+    );
+    return null;
   }
+}
 
   @override
   Widget build(BuildContext context) {

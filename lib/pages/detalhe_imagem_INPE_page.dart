@@ -23,7 +23,6 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
   Map<String, dynamic>? imageData;
   bool _isSelectedTratada = false;
   bool _isSelectedMascara = false;
-  double _downloadProgress = 0.0;
 
   @override
   void initState() {
@@ -81,9 +80,7 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                     onPressed: () async {
                       Navigator.of(context).pop(); // Fechar o diálogo
 
-                      // Solicitar o diretório uma vez
-                      String? selectedDirectory =
-                          await FilePicker.platform.getDirectoryPath();
+                      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
                       if (selectedDirectory == null) {
                         return; // Usuário cancelou a seleção
                       }
@@ -91,18 +88,16 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                       if (_isSelectedTratada &&
                           imageData != null &&
                           imageData!['identificacao_ia'] != null &&
-                          imageData!['identificacao_ia']['img_tratada'] !=
-                              null) {
+                          imageData!['identificacao_ia']['thumbnail_imagem_url'] != null) {
                         await _downloadImage(
-                            imageData!['identificacao_ia']['img_tratada'],
+                            imageData!['identificacao_ia']['thumbnail_imagem_url'],
                             imageData!['identificacao_ia']['id'],
                             selectedDirectory: selectedDirectory);
                       }
                       if (_isSelectedMascara &&
                           imageData != null &&
                           imageData!['identificacao_ia'] != null &&
-                          imageData!['identificacao_ia']['mask_nuvem'] !=
-                              null) {
+                          imageData!['identificacao_ia']['mask_nuvem'] != null) {
                         await _downloadImage(
                             imageData!['identificacao_ia']['mask_nuvem'],
                             imageData!['identificacao_ia']['id'],
@@ -276,10 +271,10 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 10),
-                            if (imageData!['identificacao_ia']['img_tratada'] !=
+                            if (imageData!['identificacao_ia']['thumbnail_imagem_url'] !=
                                 null)
                               Image.network(
-                                imageData!['identificacao_ia']['img_tratada'],
+                                imageData!['identificacao_ia']['thumbnail_imagem_url'],
                                 width: 300,
                                 height: 300,
                                 fit: BoxFit.cover,
@@ -298,11 +293,14 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                           {'campo': 'ID', 'valor': imageData!['id'] ?? ''},
                           {
                             'campo': 'Data',
-                            'valor': imageData!['data'] != null
-                                ? _formatDate(imageData!['data'])
+                            'valor': imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['data'] != null
+                                ? _formatDate(imageData!['identificacao_ia']['data'])
                                 : ''
                           },
-                          {'campo': 'Hora', 'valor': imageData!['hora'] ?? ''},
+                          {'campo': 'Hora', 'valor': imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['hora'] != null
+                                ? imageData!['identificacao_ia']['hora']
+                                : ''
+                          },
                           {
                             'campo': 'Resolução da Imagem',
                             'valor': imageData!['identificacao_ia'] != null
@@ -362,6 +360,96 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                             'valor': imageData!['assets'] != null &&
                                     imageData!['assets']['EVI'] != null
                                 ? imageData!['assets']['EVI']['href']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Imagem Sem Nuvem',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['imagem_sem_nuvem_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['imagem_sem_nuvem_url']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Imagem Sem Sombra',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['imagem_sem_sombra_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['imagem_sem_sombra_url']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Imagem Nuvem',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['imagem_nuvem_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['imagem_nuvem_url']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Imagem Sombra',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['imagem_sombra_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['imagem_sombra_url']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Thumbnail Sem Nuvem',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['thumbnail_sem_nuvem_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['thumbnail_sem_nuvem_url']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Thumbnail Sem Sombra',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['thumbnail_sem_sombra_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['thumbnail_sem_sombra_url']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Thumbnail Nuvem',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['thumbnail_nuvem_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['thumbnail_nuvem_url']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Thumbnail Sombra',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['thumbnail_sombra_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['thumbnail_sombra_url']
+                                : 'Não se Aplica'
+                          },
+                          {
+                            'campo': 'Thumbnail Imagem',
+                            'valor': imageData!['identificacao_ia'] != null &&
+                                    imageData!['identificacao_ia']
+                                            ['thumbnail_imagem_url'] !=
+                                        null
+                                ? imageData!['identificacao_ia']
+                                    ['thumbnail_imagem_url']
                                 : 'Não se Aplica'
                           },
                         ],
