@@ -21,6 +21,19 @@ class VisualizarMapaThumb extends StatefulWidget {
 class _VisualizarMapaThumbState extends State<VisualizarMapaThumb> {
   final MapController _mapController = MapController();
   String _currentLayer = 'hybrid';
+  List<String> _selectedThumbnails = [];
+
+  final Map<String, String> _thumbnails = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _thumbnails['Imagem Original'] = widget.featureData['identificacao_ia']['thumbnail_imagem_url'];
+    _thumbnails['Nuvem'] = widget.featureData['identificacao_ia']['thumbnail_nuvem_url'];
+    _thumbnails['Sem Nuvem'] = widget.featureData['identificacao_ia']['thumbnail_sem_nuvem_url'];
+    _thumbnails['Sem Sombra'] = widget.featureData['identificacao_ia']['thumbnail_sem_sombra_url'];
+    _thumbnails['Sombra'] = widget.featureData['identificacao_ia']['thumbnail_sombra_url'];
+  }
 
   void _changeLayer(String layer) {
     setState(() {
@@ -42,13 +55,22 @@ class _VisualizarMapaThumbState extends State<VisualizarMapaThumb> {
     }
   }
 
+  void _toggleThumbnail(String key) {
+    setState(() {
+      if (_selectedThumbnails.contains(key)) {
+        _selectedThumbnails.remove(key);
+      } else {
+        _selectedThumbnails.add(key);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final String mapboxToken = dotenv.env["MAPBOX_TOKEN"] ?? '';
 
     // Extrair dados do JSON
     final bbox = widget.featureData['bbox'];
-    final thumbnailUrl = widget.featureData['identificacao_ia']['thumbnail_imagem_url'];
 
     final imageNorth = bbox[3];
     final imageSouth = bbox[1];
@@ -77,18 +99,19 @@ class _VisualizarMapaThumbState extends State<VisualizarMapaThumb> {
                 subdomains: const ['a', 'b', 'c'],
                 tileProvider: CancellableNetworkTileProvider(),
               ),
-              OverlayImageLayer(
-                overlayImages: [
-                  OverlayImage(
-                    bounds: LatLngBounds(
-                      LatLng(imageSouth, imageWest),
-                      LatLng(imageNorth, imageEast),
+              for (String key in _selectedThumbnails)
+                OverlayImageLayer(
+                  overlayImages: [
+                    OverlayImage(
+                      bounds: LatLngBounds(
+                        LatLng(imageSouth, imageWest),
+                        LatLng(imageNorth, imageEast),
+                      ),
+                      imageProvider: NetworkImage(_thumbnails[key]!),
+                      opacity: 1.0, // Remover a transparência
                     ),
-                    imageProvider: NetworkImage(thumbnailUrl),
-                    opacity: 0.8,
-                  ),
-                ],
-              ),
+                  ],
+                ),
             ],
           ),
           Positioned(
@@ -127,6 +150,46 @@ class _VisualizarMapaThumbState extends State<VisualizarMapaThumb> {
                           child: Text('Ruas'),
                         ),
                       ];
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+                FloatingActionButton(
+                  heroTag: 'thumbnailButton',
+                  onPressed: () {},
+                  mini: true,
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF176B87),
+                  elevation: 5,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(
+                        color: Color(0xFF176B87),
+                        width: 1), // Adiciona a borda de 1px
+                  ),
+                  child: PopupMenuButton<String>(
+                    icon: const Icon(Icons.image),
+                    itemBuilder: (BuildContext context) {
+                      return _thumbnails.keys.map((String key) {
+                        return PopupMenuItem<String>(
+                          value: key,
+                          child: StatefulBuilder(
+                            builder: (BuildContext context, StateSetter setState) {
+                              return CheckboxListTile(
+                                title: Text(key),
+                                value: _selectedThumbnails.contains(key),
+                                activeColor: const Color(0xFF176B87), // Cor ativa do checkbox
+                                checkColor: Colors.white, // Cor do ícone de seleção
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    _toggleThumbnail(key);
+                                  });
+                                },
+                              );
+                            },
+                          ),
+                        );
+                      }).toList();
                     },
                   ),
                 ),
