@@ -495,6 +495,26 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
               ],
             ),
           ),
+          Positioned(
+            bottom: 16,
+            left: 16,
+            child: FloatingActionButton(
+              heroTag: 'uniqueTag3',
+              onPressed: () {
+                // Ação ao clicar no botão de mapa
+              },
+              backgroundColor: const Color(0xFF176B87),
+              foregroundColor: Colors.white, // Ícone na cor branca
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(
+                    color: Colors.white,
+                    width: 1), // Borda de 1px na cor branca
+              ),
+              elevation: 5, // Sombra para mostrar que o botão está suspenso
+              child: const Icon(Icons.map),
+            ),
+          ),
         ],
       ),
     );
