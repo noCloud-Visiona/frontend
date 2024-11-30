@@ -7,7 +7,9 @@ import 'package:frontend/widgets/custom_dialog.dart';
 import 'package:frontend/utils/download_utils_API_INPE.dart'; // Importando o arquivo utilitário
 import 'package:frontend/utils/generate_Pdf_INPE.dart'; // Importando o arquivo de geração de PDF
 import 'package:intl/intl.dart'; // Importando a biblioteca intl
-import 'package:open_file/open_file.dart'; // Importando a biblioteca open_file
+import 'package:open_file/open_file.dart';
+
+import 'visualizar_mapa_thumb_page.dart'; // Importando a biblioteca open_file
 
 class DetalheImgINPEPage extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -501,7 +503,14 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
             child: FloatingActionButton(
               heroTag: 'uniqueTag3',
               onPressed: () {
-                // Ação ao clicar no botão de mapa
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VisualizarMapaThumb (
+                      featureData: imageData!,
+                    ),
+                  ),
+                );
               },
               backgroundColor: const Color(0xFF176B87),
               foregroundColor: Colors.white, // Ícone na cor branca
