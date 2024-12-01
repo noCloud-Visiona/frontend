@@ -250,6 +250,12 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
     final leste = bbox[2];
     final oeste = bbox[0];
 
+    final data = imageData!['properties'] != null && imageData!['properties']['datetime'] != null
+        ? _formatDate(imageData!['properties']['datetime'])
+        : 'Desconhecido';
+
+    final hora = imageData!['hora'] ?? 'Desconhecido';
+
     return AppTemplate(
       currentIndex: 1,
       body: Stack(
@@ -270,10 +276,10 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 10),
-                            if (imageData!['identificacao_ia']['thumbnail_imagem_url'] !=
+                            if (imageData!['identificacao_ia']['img_tratada'] !=
                                 null)
                               Image.network(
-                                imageData!['identificacao_ia']['thumbnail_imagem_url'],
+                                imageData!['identificacao_ia']['img_tratada'],
                                 width: 300,
                                 height: 300,
                                 fit: BoxFit.cover,
@@ -290,18 +296,8 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                       CustomTable(
                         data: [
                           {'campo': 'ID', 'valor': imageData!['id'] ?? ''},
-                          {
-                            'campo': 'Data',
-                            'valor': imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['data'] != null
-                                ? _formatDate(imageData!['identificacao_ia']['data'])
-                                : ''
-                          },
-                          {
-                            'campo': 'Hora',
-                            'valor': imageData!['identificacao_ia'] != null && imageData!['identificacao_ia']['hora'] != null
-                                ? imageData!['identificacao_ia']['hora']
-                                : ''
-                          },
+                          {'campo': 'Data', 'valor': data},
+                          {'campo': 'Hora', 'valor': hora},
                           {
                             'campo': 'Resolução da Imagem',
                             'valor': imageData!['identificacao_ia'] != null
@@ -340,21 +336,12 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                                     imageData!['assets']['thumbnail'] != null
                                 ? imageData!['assets']['thumbnail']['href']
                                 : 'Não se Aplica'
-                          },
-                          {
-                            'campo': 'Máscara de Nuvem',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['mask_nuvem'] !=
-                                        null
-                                ? imageData!['identificacao_ia']['mask_nuvem']
-                                : 'Não se Aplica'
-                          },
+                          },                          
                           {
                             'campo': 'Imagem Tiff',
                             'valor': imageData!['assets'] != null &&
-                                    imageData!['assets']['EVI'] != null
-                                ? imageData!['assets']['EVI']['href']
+                                    imageData!['assets']['tci'] != null
+                                ? imageData!['assets']['tci']['href']
                                 : 'Não se Aplica'
                           },
                           {

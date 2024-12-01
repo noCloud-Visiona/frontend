@@ -30,9 +30,10 @@ class _VisualizarMapaThumbState extends State<VisualizarMapaThumb> {
     super.initState();
     _thumbnails['Imagem Original'] = widget.featureData['identificacao_ia']['thumbnail_imagem_url'];
     _thumbnails['Nuvem'] = widget.featureData['identificacao_ia']['thumbnail_nuvem_url'];
+    _thumbnails['Sombra'] = widget.featureData['identificacao_ia']['thumbnail_sombra_url'];
+    _thumbnails['Imagem Processada'] = widget.featureData['identificacao_ia']['img_tratada'];
     _thumbnails['Sem Nuvem'] = widget.featureData['identificacao_ia']['thumbnail_sem_nuvem_url'];
     _thumbnails['Sem Sombra'] = widget.featureData['identificacao_ia']['thumbnail_sem_sombra_url'];
-    _thumbnails['Sombra'] = widget.featureData['identificacao_ia']['thumbnail_sombra_url'];
   }
 
   void _changeLayer(String layer) {

@@ -1,20 +1,22 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:provider/provider.dart';
-import 'package:frontend/utils/jwt_utils.dart';
-import 'package:frontend/providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:frontend/pages/detalhe_imagem_INPE_page.dart'; // Importar a página de detalhes INPE
+import 'package:provider/provider.dart';
+import 'package:frontend/providers/auth_provider.dart'; // Certifique-se de que o caminho está correto
+import 'package:frontend/utils/jwt_utils.dart'; // Certifique-se de que o caminho está correto
+import 'package:frontend/pages/detalhe_imagem_INPE_page.dart';
+import 'package:intl/intl.dart'; // Importando a biblioteca intl para formatação de data
 
-class HistoricoPage extends StatefulWidget {
+class HistoryPage extends StatefulWidget {
+  const HistoryPage({Key? key}) : super(key: key);
+
   @override
-  _HistoricoPageState createState() => _HistoricoPageState();
+  _HistoryPageState createState() => _HistoryPageState();
 }
 
-class _HistoricoPageState extends State<HistoricoPage> {
-  List<dynamic> historico = [];
-  bool isLoading = true;
+class _HistoryPageState extends State<HistoryPage> {
+  List<dynamic> _historico = [];
 
   @override
   void initState() {
@@ -49,95 +51,58 @@ class _HistoricoPageState extends State<HistoricoPage> {
         if (userId != null) {
           final response = await http.get(
             Uri.parse('${dotenv.env['FIREBASE_API_URL']}/historico/$userId'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
           );
 
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             setState(() {
-              historico = data;
-              isLoading = false;
+              _historico = data;
             });
           } else {
-            throw Exception('Falha ao carregar histórico.');
+            print('Erro ao buscar histórico: ${response.statusCode}');
           }
-        } else {
-          print('Erro: ID do usuário não encontrado.');
         }
       }
     } catch (error) {
-      print('Erro ao carregar histórico: $error');
-      setState(() {
-        isLoading = false;
-      });
+      print('Erro ao buscar histórico: $error');
     }
   }
 
-  Future<void> _deleteImage(String? imageId) async {
-    if (imageId == null) {
-      print('Erro: ID da imagem é null.');
-      return;
-    }
-
-    print('imageId = $imageId');
-
+  String _formatDate(String? dateStr) {
+    if (dateStr == null) return 'Desconhecido';
     try {
-      final token = await _fetchJWT();
-      if (token != null) {
-        final decodedToken = getDecodedToken(token);
-        final userId = decodedToken?['id'];
-
-        if (userId != null) {
-          final response = await http.delete(
-            Uri.parse(
-                '${dotenv.env['FIREBASE_API_URL']}/delete_image/$imageId/$userId'),
-          );
-
-          if (response.statusCode == 200) {
-            setState(() {
-              historico.removeWhere((item) => item['id'] == imageId);
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Imagem deletada com sucesso!')),
-            );
-          } else {
-            throw Exception('Falha ao deletar imagem.');
-          }
-        } else {
-          print('Erro: ID do usuário não encontrado.');
-        }
-      }
-    } catch (error) {
-      print('Erro ao deletar imagem: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao deletar imagem.')),
-      );
+      final DateTime dateTime = DateTime.parse(dateStr);
+      final DateFormat formatter = DateFormat('dd/MM/yyyy');
+      return formatter.format(dateTime);
+    } catch (e) {
+      return 'Desconhecido';
     }
   }
 
-  void _confirmDelete(String? imageId) {
-    if (imageId == null) {
-      return;
-    }
-
+  void _confirmDelete(String imageId, String userId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmar exclusão'),
-          content: Text('Você realmente deseja excluir esta imagem?'),
+          title: Text('Confirmar Exclusão'),
+          content: Text('Tem certeza que deseja excluir esta imagem?'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Fecha o popup
+                Navigator.of(context).pop();
               },
               child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Fecha o popup
-                _deleteImage(imageId); // Chama a função para deletar a imagem
+                _deleteImage(imageId, userId);
+                Navigator.of(context).pop();
               },
-              child: Text('Deletar'),
+              child: Text('Excluir'),
             ),
           ],
         );
@@ -145,45 +110,63 @@ class _HistoricoPageState extends State<HistoricoPage> {
     );
   }
 
-  // Função para buscar o status de um job_id
-  Future<void> _fetchStatus(String jobId) async {
+  Future<void> _deleteImage(String imageId, String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse('${dotenv.env['AI_API_URL']}/status/$jobId'),
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = json.decode(response.body);
-        print('Status do job: $responseData');
-
-        // Navegar para a página de detalhes
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DetalheImgINPEPage(
-              data: responseData,
-              imageBytes: null, // Passe os bytes da imagem se necessário
-            ),
-          ),
+      final token = await _fetchJWT();
+      if (token != null) {
+        final response = await http.delete(
+          Uri.parse('${dotenv.env['FIREBASE_API_URL']}/delete_image/$imageId/$userId'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
         );
 
-        // Comentado: Navegar para outra página de detalhes, caso necessário
-        /*
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DetalheImgPage(
-              data: responseData,
-              imageBytes: null,
-            ),
-          ),
-        );
-        */
-      } else {
-        throw Exception('Falha ao obter status do job.');
+        if (response.statusCode == 200) {
+          setState(() {
+            _historico.removeWhere((item) => item['id'] == imageId);
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Imagem excluída com sucesso.')),
+          );
+        } else {
+          print('Erro ao excluir imagem: ${response.statusCode}');
+        }
       }
     } catch (error) {
-      print('Erro ao obter status do job: $error');
+      print('Erro ao excluir imagem: $error');
+    }
+  }
+
+  Future<void> _fetchStatus(String jobId) async {
+    try {
+      final token = await _fetchJWT();
+      if (token != null) {
+        final response = await http.get(
+          Uri.parse('${dotenv.env['FIREBASE_API_URL']}/status/$jobId'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetalheImgINPEPage(
+                data: data,
+                imageBytes: null, // Passe os bytes da imagem se necessário
+              ),
+            ),
+          );
+        } else {
+          print('Erro ao buscar status: ${response.statusCode}');
+        }
+      }
+    } catch (error) {
+      print('Erro ao buscar status: $error');
     }
   }
 
@@ -191,65 +174,50 @@ class _HistoricoPageState extends State<HistoricoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Histórico de Imagens'),
+        title: Text('Histórico'),
       ),
-      body: isLoading
+      body: _historico.isEmpty
           ? Center(child: CircularProgressIndicator())
-          : historico.isEmpty
-              ? Center(
-                  child: Text('Sem histórico de imagem disponível no momento.'))
-              : ListView.builder(
-                  itemCount: historico.length,
-                  itemBuilder: (context, index) {
-                    final item = historico[index];
-                    print('Item: $item');
-                    final imageId = item['id'] as String?;
-                    final jobId = item['identificacao_ia']['job_id'] as String?;
-
-                    return ListTile(
-                      leading: Image.network(
-                        Uri.encodeFull(item['assets']['thumbnail']['href'] ??
-                            'https://via.placeholder.com/640'),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.error,
-                            color: Colors.red,
-                            size: 50,
-                          );
+          : ListView.builder(
+              itemCount: _historico.length,
+              itemBuilder: (context, index) {
+                final item = _historico[index];
+                final jobId = item['jobId'] ?? 'Desconhecido';
+                final imageId = item['id'] ?? 'Desconhecido';
+                final userId = item['userId'] ?? 'Desconhecido'; // Certifique-se de que o userId está presente no item
+                return ListTile(
+                  leading: item['identificacao_ia'] != null && item['identificacao_ia']['thumbnail_imagem_url'] != null
+                      ? Image.network(
+                          item['identificacao_ia']['thumbnail_imagem_url'],
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.image_not_supported),
+                  title: Text('Satelite: ${item['collection'] ?? 'Desconhecido'}'),
+                  subtitle: Text('Data: ${_formatDate(item['data'])} - Hora: ${item['hora'] ?? 'Desconhecido'}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Área Visível: ${item['identificacao_ia'] != null ? item['identificacao_ia']['area_visivel_mapa'] ?? '0' : '0'}%'),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          _confirmDelete(imageId, userId);
                         },
                       ),
-                      title: Text('Satelite: ${item['collection']}'),
-                      subtitle:
-                          Text('Data: ${item['data']} - Hora: ${item['hora']}'),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                              'Área Visível: ${item['identificacao_ia']['area_visivel_mapa']}%'),
-                          IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              _confirmDelete(imageId);
-                            },
-                          ),
-                        ],
-                      ),
-                      onTap: () {
-                        if (jobId != null) {
-                          _fetchStatus(jobId); // Buscar status e redirecionar
-                        } else {
-                          print('Job ID não encontrado.');
-                        }
-                      },
-                    );
+                    ],
+                  ),
+                  onTap: () {
+                    if (jobId != 'Desconhecido') {
+                      _fetchStatus(jobId); // Buscar status e redirecionar
+                    } else {
+                      print('Job ID não encontrado.');
+                    }
                   },
-                ),
+                );
+              },
+            ),
     );
   }
 }

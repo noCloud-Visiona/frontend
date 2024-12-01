@@ -40,7 +40,7 @@ class CustomBottomBar extends StatelessWidget {
           // Navegar para a página de histórico
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => HistoricoPage()),
+            MaterialPageRoute(builder: (context) => HistoryPage()),
           );
         }
       },
