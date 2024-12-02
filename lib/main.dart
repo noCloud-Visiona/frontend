@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:frontend/pages/analisar_img_page.dart';
-import 'package:frontend/pages/history_page.dart';
-import 'package:frontend/pages/login_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // Import necessário
 import 'package:provider/provider.dart';
+import 'package:frontend/pages/login_page.dart';
+import 'package:frontend/pages/analisar_img_page.dart';
 import 'package:frontend/providers/auth_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env"); 
-
-  runApp(const MyApp());
+void main() async {
+  await dotenv.load(fileName: ".env");
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
-            create: (_) => AuthProvider()), // Adicione seu AuthProvider aqui
+          create: (_) => AuthProvider(), // Adicione seu AuthProvider aqui
+        ),
       ],
       child: MaterialApp(
         title: 'noCloud',
@@ -32,6 +29,10 @@ class MyApp extends StatelessWidget {
           ),
         ),
         home: const LoginPage(),
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        supportedLocales: const [
+          Locale('pt', 'BR'), // Adiciona suporte para português do Brasil
+        ],
         routes: {
           '/analisar': (context) {
             final args = ModalRoute.of(context)!.settings.arguments
@@ -41,7 +42,6 @@ class MyApp extends StatelessWidget {
             );
           },
           '/login': (context) => const LoginPage(),
-          '/lista': (context) => HistoricoPage(),
         },
       ),
     );

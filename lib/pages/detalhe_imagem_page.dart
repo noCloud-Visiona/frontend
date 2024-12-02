@@ -139,7 +139,7 @@ class _DetalheImgPageState extends State<DetalheImgPage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         DownloadButton(
                           onDownloadImage: () => downloadImage(context, imageData!['img_tratada']),

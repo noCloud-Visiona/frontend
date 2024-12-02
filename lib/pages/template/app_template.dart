@@ -14,7 +14,7 @@ class AppTemplate extends StatelessWidget {
   const AppTemplate({
     super.key,
     required this.body,
-    required this.currentIndex,
+    required this.currentIndex, FloatingActionButton? floatingActionButton,
   });
 
   Future<String> saveImage(String imagePath) async {
@@ -79,7 +79,7 @@ class AppTemplate extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.list, color: Colors.white),
-            label: 'Lista',
+            label: 'Análises',
           ),
         ],
       ),

@@ -49,7 +49,13 @@ class AnalisarImgPage extends StatelessWidget {
       print('Enviando imagem para análise...'); // Log para depuração
 
       var streamedResponse = await request.send().timeout(const Duration(seconds: 60));
-      if (streamedResponse.statusCode == 200) {
+      if (streamedResponse.statusCode == 202) {
+        print('Análise em andamento. Aguardando resposta...'); // Log para depuração
+
+        // Exibir o popup de "Análise em andamento"
+        _showAnalysisInProgressDialog(context);
+        
+      } else if (streamedResponse.statusCode == 200) {
         print('Imagem enviada com sucesso, recebendo resposta...'); // Log para depuração
         var responseData = await streamedResponse.stream.toBytes().timeout(const Duration(seconds: 60));
         print('Resposta recebida, decodificando...'); // Log para depuração
@@ -64,6 +70,7 @@ class AnalisarImgPage extends StatelessWidget {
           imageBytes = response.bodyBytes;
         }
 
+        Navigator.pop(context); // Fechar o diálogo de carregamento
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -74,21 +81,71 @@ class AnalisarImgPage extends StatelessWidget {
           ),
         );
       } else {
-        print('Erro ao enviar imagem: ${streamedResponse.statusCode}');
-        print('Erro ao enviar imagem: ${streamedResponse.reasonPhrase}');
+        Navigator.pop(context); // Fechar o diálogo de carregamento
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao enviar imagem: ${streamedResponse.reasonPhrase}')),
+        );
       }
     } on TimeoutException catch (e) {
-      print('Erro: Tempo limite excedido: $e');
+      Navigator.pop(context); // Fechar o diálogo de carregamento
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: Tempo limite excedido: $e')),
+      );
     } on http.ClientException catch (e) {
-      print('Erro: ClientException: $e');
+      Navigator.pop(context); // Fechar o diálogo de carregamento
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: ClientException: $e')),
+      );
     } catch (e) {
-      print('Erro: $e');
+      Navigator.pop(context); // Fechar o diálogo de carregamento
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro: $e')),
+      );
     }
+  }
+
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text('Processando imagem...'),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showAnalysisInProgressDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Análise em andamento'),
+          content: const Text(
+            'A análise está em andamento!\nVerifique no seu histórico em aproximadamente 10 minutos.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-
     return AppTemplate(
       body: Center(
         child: Column(
@@ -110,7 +167,10 @@ class AnalisarImgPage extends StatelessWidget {
               ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => _analisarImagem(context),
+              onPressed: () {
+                _showLoadingDialog(context);
+                _analisarImagem(context);
+              },
               child: const Text('Analisar'),
             ),
           ],

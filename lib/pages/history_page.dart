@@ -1,19 +1,23 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:provider/provider.dart';
-import 'package:frontend/utils/jwt_utils.dart';
-import 'package:frontend/providers/auth_provider.dart';
+import 'package:frontend/pages/template/app_template.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:provider/provider.dart';
+import 'package:frontend/providers/auth_provider.dart'; // Certifique-se de que o caminho está correto
+import 'package:frontend/utils/jwt_utils.dart'; // Certifique-se de que o caminho está correto
+import 'package:frontend/pages/detalhe_imagem_INPE_page_historico.dart';
+import 'package:intl/intl.dart'; // Importando a biblioteca intl para formatação de data
 
-class HistoricoPage extends StatefulWidget {
+class HistoryPage extends StatefulWidget {
+  const HistoryPage({Key? key}) : super(key: key);
+
   @override
-  _HistoricoPageState createState() => _HistoricoPageState();
+  _HistoryPageState createState() => _HistoryPageState();
 }
 
-class _HistoricoPageState extends State<HistoricoPage> {
-  List<dynamic> historico = [];
-  bool isLoading = true;
+class _HistoryPageState extends State<HistoryPage> {
+  List<dynamic> _historico = [];
 
   @override
   void initState() {
@@ -21,73 +25,183 @@ class _HistoricoPageState extends State<HistoricoPage> {
     _fetchHistorico();
   }
 
-  Future<void> _fetchHistorico() async {
+  Future<String?> _fetchJWT() async {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final token = authProvider.jwtToken;
 
       if (token != null && isTokenValid(token)) {
+        return token;
+      } else {
+        throw Exception("Token inválido ou inexistente.");
+      }
+    } catch (error) {
+      print('Erro ao buscar o JWT: $error');
+      return null;
+    }
+  }
+
+  Future<void> _fetchHistorico() async {
+    try {
+      final token = await _fetchJWT();
+      if (token != null) {
         final decodedToken = getDecodedToken(token);
         final userId = decodedToken?['id'];
+        print('userId: $userId');
 
         if (userId != null) {
           final response = await http.get(
-            Uri.parse('${dotenv.env['AI_API_URL']}/historico/$userId'),
+            Uri.parse('${dotenv.env['FIREBASE_API_URL']}/historico/$userId'),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
           );
 
           if (response.statusCode == 200) {
             final data = json.decode(response.body);
             setState(() {
-              historico = data;
-              isLoading = false;
+              _historico = data;
             });
           } else {
-            throw Exception('Falha ao carregar histórico.');
+            print('Erro ao buscar histórico: ${response.statusCode}');
           }
         }
       }
     } catch (error) {
-      print('Erro ao carregar histórico: $error');
-      setState(() {
-        isLoading = false;
-      });
+      print('Erro ao buscar histórico: $error');
+    }
+  }
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null) return 'Desconhecido';
+    try {
+      final DateTime dateTime = DateTime.parse(dateStr);
+      final DateFormat formatter = DateFormat('dd/MM/yyyy');
+      return formatter.format(dateTime);
+    } catch (e) {
+      return 'Desconhecido';
+    }
+  }
+
+  void _confirmDelete(String imageId, String userId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmar Exclusão'),
+          content: Text('Tem certeza que deseja excluir esta imagem?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteImage(imageId, userId);
+                Navigator.of(context).pop();
+              },
+              child: Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deleteImage(String imageId, String userId) async {
+    try {
+      final token = await _fetchJWT();
+      if (token != null) {
+        final response = await http.delete(
+          Uri.parse(
+              '${dotenv.env['FIREBASE_API_URL']}delete_image/$imageId/$userId'),
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          setState(() {
+            _historico.removeWhere((item) => item['id'] == imageId);
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Imagem excluída com sucesso.')),
+          );
+        } else {
+          print('Erro ao excluir imagem: ${response.statusCode}');
+        }
+      }
+    } catch (error) {
+      print('Erro ao excluir imagem: $error');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Histórico de Imagens'),
-      ),
-      body: isLoading
+    return AppTemplate(
+      currentIndex:
+          2, // Defina o índice correto para o histórico na barra de navegação
+      body: _historico.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
-              itemCount: historico.length,
+              itemCount: _historico.length,
               itemBuilder: (context, index) {
-                final item = historico[index];
+                final item = _historico[index];
+                final jobId = item['jobId'] ?? 'Desconhecido';
+                final imageId = item['id'] ?? 'Desconhecido';
+                final userId = item['id_usuario'] ?? 'Desconhecido';
+
                 return ListTile(
-                  leading: Image.network(
-                    Uri.encodeFull(item['thumbnail'] ?? 'https://via.placeholder.com/640'),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.error,
-                        color: Colors.red,
-                        size: 50,
-                      );
-                    },
+                  leading: item['identificacao_ia'] != null
+                      ? Image.network(
+                          item['assets']['thumbnail']['href'],
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        )
+                      : Icon(Icons.image_not_supported),
+                  title:
+                      Text('Satelite: ${item['collection'] ?? 'Desconhecido'}'),
+                  subtitle: Text(
+                      'Data: ${_formatDate(item['data'])} - Hora: ${item['hora'] ?? 'Desconhecido'}'),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                          'Área Visível: ${item['identificacao_ia'] != null ? item['identificacao_ia']['area_visivel_mapa'] ?? '0' : '0'}%'),
+                      IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          _confirmDelete(imageId, userId);
+                        },
+                      ),
+                    ],
                   ),
-                  title: Text('Satelite: ${item['satelite']}'),
-                  subtitle: Text('Data: ${item['data']} - Hora: ${item['hora']}'),
-                  trailing: Text('Área Visível: ${item['area_visivel_mapa']}%'),
                   onTap: () {
-                    // Ação ao clicar no item da lista
+                    if (item['identificacao_ia'] != null) {
+                      print(
+                          "Dados enviados para a próxima página: ${item['identificacao_ia']}");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetalheImgINPEPageHistorico(
+                            data: item[
+                                'identificacao_ia'], // Passa o JSON diretamente
+                            imageBytes:
+                                null, // Substitua por dados da imagem, se necessário
+                          ),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Detalhes da imagem indisponíveis.')),
+                      );
+                    }
                   },
                 );
               },
