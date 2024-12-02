@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:frontend/pages/visualizar_mapa_thumb_page.dart';
+import 'package:frontend/pages/visualizar_mapa_thumb_page_historico.dart';
 import 'package:frontend/widgets/custom_img_detail_table.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:frontend/widgets/custom_dialog.dart';
@@ -10,17 +10,20 @@ import 'package:frontend/utils/generate_Pdf_INPE.dart'; // Importando o arquivo 
 import 'package:intl/intl.dart'; // Importando a biblioteca intl
 import 'package:open_file/open_file.dart'; // Importando a biblioteca open_file
 
-class DetalheImgINPEPage extends StatefulWidget {
+class DetalheImgINPEPageHistorico extends StatefulWidget {
   final Map<String, dynamic> data;
   final Uint8List? imageBytes;
 
-  const DetalheImgINPEPage({super.key, required this.data, this.imageBytes});
+  const DetalheImgINPEPageHistorico(
+      {super.key, required this.data, this.imageBytes});
 
   @override
-  _DetalheImgINPEPageState createState() => _DetalheImgINPEPageState();
+  _DetalheImgINPEPageHistoricoState createState() =>
+      _DetalheImgINPEPageHistoricoState();
 }
 
-class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
+class _DetalheImgINPEPageHistoricoState
+    extends State<DetalheImgINPEPageHistorico> {
   Map<String, dynamic>? imageData;
   bool _isSelectedTratada = false;
   bool _isSelectedMascara = false;
@@ -89,22 +92,17 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
 
                       if (_isSelectedTratada &&
                           imageData != null &&
-                          imageData!['identificacao_ia'] != null &&
-                          imageData!['identificacao_ia']['img_tratada'] !=
-                              null) {
+                          imageData!['img_tratada'] != null) {
                         await _downloadImage(
-                            imageData!['identificacao_ia']['img_tratada'],
-                            imageData!['identificacao_ia']['id'],
+                            imageData!['img_tratada'], imageData!['id'],
                             selectedDirectory: selectedDirectory);
                       }
                       if (_isSelectedMascara &&
                           imageData != null &&
-                          imageData!['identificacao_ia'] != null &&
-                          imageData!['identificacao_ia']['mask_nuvem'] !=
-                              null) {
+                          imageData != null &&
+                          imageData!['mask_nuvem'] != null) {
                         await _downloadImage(
-                            imageData!['identificacao_ia']['mask_nuvem'],
-                            imageData!['identificacao_ia']['id'],
+                            imageData!['mask_nuvem'], imageData!['id'],
                             isCloudMask: true,
                             selectedDirectory: selectedDirectory);
                       }
@@ -271,22 +269,22 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 10),
-                      if (imageData!['identificacao_ia'] != null)
+                      if (imageData != null)
                         Column(
                           children: [
                             Text(
-                              '${imageData!['identificacao_ia']['id'] ?? ''}',
+                              '${imageData!['id'] ?? ''}',
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 10),
-                            if (imageData!['identificacao_ia']['img_tratada'] !=
-                                null)
-                              Image.network(
-                                imageData!['identificacao_ia']['img_tratada'],
-                                width: 300,
-                                height: 300,
-                                fit: BoxFit.cover,
+                            if (imageData!['img_tratada'] != null)
+                              Center(
+                                child: Image.network(
+                                  imageData!['img_tratada'],
+                                  width: 600,
+                                  height: 600,
+                                ),
                               ),
                           ],
                         ),
@@ -300,144 +298,62 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                       CustomTable(
                         data: [
                           {'campo': 'ID', 'valor': imageData!['id'] ?? ''},
-                          {'campo': 'Data', 'valor': data},
-                          {'campo': 'Hora', 'valor': hora},
                           {
                             'campo': 'Resolução da Imagem',
-                            'valor': imageData!['identificacao_ia'] != null
-                                ? imageData!['identificacao_ia']
-                                        ['resolucao_imagem_png'] ??
-                                    ''
-                                : ''
-                          },
-                          {
-                            'campo': 'Coleção',
-                            'valor': imageData!['collection'] ?? ''
-                          },
-                          {
-                            'campo': 'Satélite',
-                            'valor': imageData!['collection'] ?? ''
+                            'valor': imageData!['resolucao_imagem_png'] ?? ''
                           },
                           {
                             'campo': 'Percentual de Nuvem',
-                            'valor': imageData!['identificacao_ia'] != null
-                                ? '${imageData!['identificacao_ia']['percentual_nuvem'] ?? ''}%'
-                                : ''
+                            'valor': '${imageData!['percentual_nuvem'] ?? ''}%'
                           },
                           {
                             'campo': 'Área Visível no Mapa',
-                            'valor': imageData!['identificacao_ia'] != null
-                                ? '${imageData!['identificacao_ia']['area_visivel_mapa'] ?? ''}%'
-                                : ''
-                          },
-                          {
-                            'campo': 'Coordenadas',
-                            'valor':
-                                'Norte: $norte\nSul: $sul\nLeste: $leste\nOeste: $oeste'
-                          },
-                          {
-                            'campo': 'Thumbnail',
-                            'valor': imageData!['assets'] != null &&
-                                    imageData!['assets']['thumbnail'] != null
-                                ? imageData!['assets']['thumbnail']['href']
-                                : ''
-                          },
-                          {
-                            'campo': 'Imagem Tiff',
-                            'valor': imageData!['assets'] != null &&
-                                    imageData!['assets']['tci'] != null
-                                ? imageData!['assets']['tci']['href']
-                                : ''
+                            'valor': '${imageData!['area_visivel_mapa'] ?? ''}%'
                           },
                           {
                             'campo': 'Imagem Sem Nuvem',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['imagem_sem_nuvem_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['imagem_sem_nuvem_url']
-                                : ''
+                            'valor': imageData!['imagem_sem_nuvem_url'] ??
+                                'Não se Aplica'
                           },
                           {
                             'campo': 'Imagem Sem Sombra',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['imagem_sem_sombra_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['imagem_sem_sombra_url']
-                                : ''
+                            'valor': imageData!['imagem_sem_sombra_url'] ??
+                                'Não se Aplica'
                           },
                           {
                             'campo': 'Imagem Nuvem',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['imagem_nuvem_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['imagem_nuvem_url']
-                                : ''
+                            'valor': imageData!['imagem_nuvem_url'] ??
+                                'Não se Aplica'
                           },
                           {
                             'campo': 'Imagem Sombra',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['imagem_sombra_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['imagem_sombra_url']
-                                : ''
+                            'valor': imageData!['imagem_sombra_url'] ??
+                                'Não se Aplica'
                           },
                           {
                             'campo': 'Thumbnail Sem Nuvem',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['thumbnail_sem_nuvem_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['thumbnail_sem_nuvem_url']
-                                : ''
+                            'valor': imageData!['thumbnail_sem_nuvem_url'] ??
+                                'Não se Aplica'
                           },
                           {
                             'campo': 'Thumbnail Sem Sombra',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['thumbnail_sem_sombra_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['thumbnail_sem_sombra_url']
-                                : ''
+                            'valor': imageData!['thumbnail_sem_sombra_url'] ??
+                                'Não se Aplica'
                           },
                           {
                             'campo': 'Thumbnail Nuvem',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['thumbnail_nuvem_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['thumbnail_nuvem_url']
-                                : ''
+                            'valor': imageData!['thumbnail_nuvem_url'] ??
+                                'Não se Aplica'
                           },
                           {
                             'campo': 'Thumbnail Sombra',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['thumbnail_sombra_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['thumbnail_sombra_url']
-                                : ''
+                            'valor': imageData!['thumbnail_sombra_url'] ??
+                                'Não se Aplica'
                           },
                           {
                             'campo': 'Thumbnail Imagem',
-                            'valor': imageData!['identificacao_ia'] != null &&
-                                    imageData!['identificacao_ia']
-                                            ['thumbnail_imagem_url'] !=
-                                        null
-                                ? imageData!['identificacao_ia']
-                                    ['thumbnail_imagem_url']
-                                : ''
+                            'valor': imageData!['thumbnail_imagem_url'] ??
+                                'Não se Aplica'
                           },
                         ],
                       ),
@@ -491,7 +407,7 @@ class _DetalheImgINPEPageState extends State<DetalheImgINPEPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => VisualizarMapaThumb(
+                    builder: (context) => VisualizarMapaThumbHistorico(
                       featureData: imageData!,
                     ),
                   ),

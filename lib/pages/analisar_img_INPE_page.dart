@@ -9,7 +9,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/pages/template/app_template.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AnalisarImgINPEpage extends StatelessWidget {
+class AnalisarImgINPEpage extends StatefulWidget {
   final String id;
   final String thumbnailUrl;
   final String datetime;
@@ -31,30 +31,35 @@ class AnalisarImgINPEpage extends StatelessWidget {
     required this.featureData,
   }) : super(key: key);
 
+  @override
+  _AnalisarImgINPEpageState createState() => _AnalisarImgINPEpageState();
+}
+
+class _AnalisarImgINPEpageState extends State<AnalisarImgINPEpage> {
   Future<void> _analisarImagem(BuildContext context) async {
     try {
       // Criar o JSON com os dados da imagem e as coordenadas do usuário
       var requestData = {
-        "type": featureData["type"],
-        "id": featureData["id"],
-        "collection": featureData["collection"],
-        "stac_version": featureData["stac_version"],
-        "stac_extensions": featureData["stac_extensions"],
-        "geometry": featureData["geometry"],
-        "links": featureData["links"],
-        "bbox": featureData["bbox"],
-        "assets": featureData["assets"],
-        "thumbnail": featureData["thumbnail"],
-        "properties": featureData["properties"],
+        "type": widget.featureData["type"],
+        "id": widget.featureData["id"],
+        "collection": widget.featureData["collection"],
+        "stac_version": widget.featureData["stac_version"],
+        "stac_extensions": widget.featureData["stac_extensions"],
+        "geometry": widget.featureData["geometry"],
+        "links": widget.featureData["links"],
+        "bbox": widget.featureData["bbox"],
+        "assets": widget.featureData["assets"],
+        "thumbnail": widget.featureData["thumbnail"],
+        "properties": widget.featureData["properties"],
         "user_geometry": {
           "type": "Polygon",
           "coordinates": [
             [
-              [west, south],
-              [west, north],
-              [east, north],
-              [east, south],
-              [west, south]
+              [widget.west, widget.south],
+              [widget.west, widget.north],
+              [widget.east, widget.north],
+              [widget.east, widget.south],
+              [widget.west, widget.south]
             ]
           ]
         }
@@ -69,7 +74,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
 
       // Definir a URL da API
       var apiUrl = dotenv.env['AI_API_URL'];
-      var uri = Uri.parse('$apiUrl/predict/${userId}');
+      var uri = Uri.parse('$apiUrl/predict/$userId');
 
       // Fazer o POST com o JSON
       var response = await http.post(
@@ -90,7 +95,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
         var jobId = responseBody['job_id']; // Acessa o job_id do mapa decodificado
 
         // Exibe o popup com a mensagem de que a análise está em andamento
-        _showAnalysisInProgressDialog(context, jobId);
+        _showAnalysisInProgressDialog(context, userId, jobId);
       } else {
         throw Exception('Falha ao analisar imagem. Código: ${response.statusCode}');
       }
@@ -120,7 +125,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
     );
   }
 
-  void _showAnalysisInProgressDialog(BuildContext context, String jobId) {
+  void _showAnalysisInProgressDialog(BuildContext context, String userId, String jobId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -132,7 +137,7 @@ class AnalisarImgINPEpage extends StatelessWidget {
             TextButton(
               onPressed: () async {
                 // Verificar o status da análise
-                var statusResponse = await _verificarStatusAnalise(context, jobId);
+                var statusResponse = await _verificarStatusAnalise(context, userId, jobId);
 
                 if (statusResponse != null && statusResponse['result'] != null) {
                   Navigator.of(context).pop(); // Fecha o diálogo de análise em andamento
@@ -167,18 +172,21 @@ class AnalisarImgINPEpage extends StatelessWidget {
     );
   }
 
-  Future<Map<String, dynamic>?> _verificarStatusAnalise(
-      BuildContext context, String jobId) async {
+  Future<Map<String, dynamic>?> _verificarStatusAnalise(BuildContext context, String userId, String jobId) async {
     try {
       // Fazer o GET para verificar o status da análise
       var apiUrl = dotenv.env['AI_API_URL'];
-      var uri = Uri.parse('$apiUrl/status/$jobId');
+      var uri = Uri.parse('$apiUrl/status/$userId/$jobId');
 
       var response = await http.get(uri);
 
       if (response.statusCode == 200) {
         var jsonResponse = json.decode(response.body);
-        return jsonResponse;
+        if (jsonResponse is Map<String, dynamic>) {
+          return jsonResponse;
+        } else {
+          throw Exception('Formato de resposta inesperado');
+        }
       } else {
         throw Exception('Falha ao verificar o status da análise. Código: ${response.statusCode}');
       }
@@ -206,43 +214,43 @@ class AnalisarImgINPEpage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'ID: $id',
+              'ID: ${widget.id}',
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const Divider(thickness: 2),
             Center(
-              child: Text('NORTE: ${north.toStringAsFixed(4)}',
+              child: Text('NORTE: ${widget.north.toStringAsFixed(4)}',
                   style: const TextStyle(fontSize: 16)),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('OESTE: ${west.toStringAsFixed(4)}',
+                Text('OESTE: ${widget.west.toStringAsFixed(4)}',
                     style: const TextStyle(fontSize: 16)),
-                Text('LESTE: ${east.toStringAsFixed(4)}',
+                Text('LESTE: ${widget.east.toStringAsFixed(4)}',
                     style: const TextStyle(fontSize: 16)),
               ],
             ),
             Center(
-              child: Text('SUL: ${south.toStringAsFixed(4)}',
+              child: Text('SUL: ${widget.south.toStringAsFixed(4)}',
                   style: const TextStyle(fontSize: 16)),
             ),
             const Divider(thickness: 2),
-            Text('Data: $datetime', style: const TextStyle(fontSize: 16)),
+            Text('Data: ${widget.datetime}', style: const TextStyle(fontSize: 16)),
             const Divider(thickness: 2),
             Center(
               child: Column(
                 children: [
                   if (kIsWeb)
                     Image.network(
-                      thumbnailUrl,
+                      widget.thumbnailUrl,
                       width: imageWidth,
                       height: imageHeight,
                       fit: BoxFit.cover,
                     )
                   else
                     Image.network(
-                      thumbnailUrl,
+                      widget.thumbnailUrl,
                       width: 300,
                       height: 300,
                       fit: BoxFit.cover,
@@ -262,11 +270,11 @@ class AnalisarImgINPEpage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => VisualizarImagemPage(
-                            featureData: featureData,
-                            north: north,
-                            south: south,
-                            east: east,
-                            west: west,
+                            featureData: widget.featureData,
+                            north: widget.north,
+                            south: widget.south,
+                            east: widget.east,
+                            west: widget.west,
                             id: '',
                             thumbnailUrl: '',
                             datetime: '',
