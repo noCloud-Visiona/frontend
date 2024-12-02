@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:frontend/pages/template/app_template.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:frontend/providers/auth_provider.dart'; // Certifique-se de que o caminho está correto
 import 'package:frontend/utils/jwt_utils.dart'; // Certifique-se de que o caminho está correto
-import 'package:frontend/pages/detalhe_imagem_INPE_page.dart';
+import 'package:frontend/pages/detalhe_imagem_INPE_page_historico.dart';
 import 'package:intl/intl.dart'; // Importando a biblioteca intl para formatação de data
 
 class HistoryPage extends StatefulWidget {
@@ -115,7 +116,8 @@ class _HistoryPageState extends State<HistoryPage> {
       final token = await _fetchJWT();
       if (token != null) {
         final response = await http.delete(
-          Uri.parse('${dotenv.env['FIREBASE_API_URL']}/delete_image/$imageId/$userId'),
+          Uri.parse(
+              '${dotenv.env['FIREBASE_API_URL']}delete_image/$imageId/$userId'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -138,44 +140,11 @@ class _HistoryPageState extends State<HistoryPage> {
     }
   }
 
-  Future<void> _fetchStatus(String jobId) async {
-    try {
-      final token = await _fetchJWT();
-      if (token != null) {
-        final response = await http.get(
-          Uri.parse('${dotenv.env['FIREBASE_API_URL']}/status/$jobId'),
-          headers: {
-            'Authorization': 'Bearer $token',
-            'Content-Type': 'application/json',
-          },
-        );
-
-        if (response.statusCode == 200) {
-          final data = json.decode(response.body);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DetalheImgINPEPage(
-                data: data,
-                imageBytes: null, // Passe os bytes da imagem se necessário
-              ),
-            ),
-          );
-        } else {
-          print('Erro ao buscar status: ${response.statusCode}');
-        }
-      }
-    } catch (error) {
-      print('Erro ao buscar status: $error');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Histórico'),
-      ),
+    return AppTemplate(
+      currentIndex:
+          2, // Defina o índice correto para o histórico na barra de navegação
       body: _historico.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
@@ -184,22 +153,26 @@ class _HistoryPageState extends State<HistoryPage> {
                 final item = _historico[index];
                 final jobId = item['jobId'] ?? 'Desconhecido';
                 final imageId = item['id'] ?? 'Desconhecido';
-                final userId = item['userId'] ?? 'Desconhecido'; // Certifique-se de que o userId está presente no item
+                final userId = item['id_usuario'] ?? 'Desconhecido';
+
                 return ListTile(
-                  leading: item['identificacao_ia'] != null && item['identificacao_ia']['thumbnail_imagem_url'] != null
+                  leading: item['identificacao_ia'] != null
                       ? Image.network(
-                          item['identificacao_ia']['thumbnail_imagem_url'],
+                          item['assets']['thumbnail']['href'],
                           width: 50,
                           height: 50,
                           fit: BoxFit.cover,
                         )
                       : Icon(Icons.image_not_supported),
-                  title: Text('Satelite: ${item['collection'] ?? 'Desconhecido'}'),
-                  subtitle: Text('Data: ${_formatDate(item['data'])} - Hora: ${item['hora'] ?? 'Desconhecido'}'),
+                  title:
+                      Text('Satelite: ${item['collection'] ?? 'Desconhecido'}'),
+                  subtitle: Text(
+                      'Data: ${_formatDate(item['data'])} - Hora: ${item['hora'] ?? 'Desconhecido'}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text('Área Visível: ${item['identificacao_ia'] != null ? item['identificacao_ia']['area_visivel_mapa'] ?? '0' : '0'}%'),
+                      Text(
+                          'Área Visível: ${item['identificacao_ia'] != null ? item['identificacao_ia']['area_visivel_mapa'] ?? '0' : '0'}%'),
                       IconButton(
                         icon: Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
@@ -209,10 +182,25 @@ class _HistoryPageState extends State<HistoryPage> {
                     ],
                   ),
                   onTap: () {
-                    if (jobId != 'Desconhecido') {
-                      _fetchStatus(jobId); // Buscar status e redirecionar
+                    if (item['identificacao_ia'] != null) {
+                      print(
+                          "Dados enviados para a próxima página: ${item['identificacao_ia']}");
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetalheImgINPEPageHistorico(
+                            data: item[
+                                'identificacao_ia'], // Passa o JSON diretamente
+                            imageBytes:
+                                null, // Substitua por dados da imagem, se necessário
+                          ),
+                        ),
+                      );
                     } else {
-                      print('Job ID não encontrado.');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Detalhes da imagem indisponíveis.')),
+                      );
                     }
                   },
                 );
